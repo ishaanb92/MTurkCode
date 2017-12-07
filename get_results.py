@@ -1,5 +1,5 @@
 import boto3
-
+import pickle
 
 MTURK_SANDBOX = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 mturk = boto3.client('mturk',
@@ -14,15 +14,16 @@ mturk = boto3.client('mturk',
 # Install it in your local environment with
 # pip install xmltodict
 #import xmltodict
-
-# Use the hit_id previously created
-hit_id = '3R16PJFTS3D2QVMRZZKR0ZLR4EMK4C'
+with open('hits.pkl','rb') as f:
+    hits = pickle.load(f)
 
 # We are only publishing this task to one Worker
 # So we will get back an array with one item if it has been completed
 
-worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted'])
-for assignment in worker_results['Assignments']:
-    print(assignment)
+for hit_id in hits:
+    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted'])
+    print('Results for HIT ID : {}'.format(hit_id))
+    for assignment in worker_results['Assignments']:
+        print(assignment)
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import boto3
+import pickle
 
 MTURK_SANDBOX = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 
@@ -12,6 +13,7 @@ mturk = boto3.client('mturk',
 
 print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
 
+hit_list = [] #Haha
 with open('test_hit.xml','r') as f:
     test_hit = f.read()
 
@@ -27,7 +29,13 @@ new_hit = mturk.create_hit(
     Question = test_hit
 )
 
+hit_list.append(new_hit['HIT']['HITId'])
 
 print ("A new HIT has been created. You can preview it here:")
 print ("https://workersandbox.mturk.com/mturk/preview?groupId=" + new_hit['HIT']['HITGroupId'])
 print ("HITID = " + new_hit['HIT']['HITId'] + " (Use to Get Results)")
+
+#Save the list of hit IDs
+with open('hits.pkl','wb') as f:
+    pickle.dump(hit_list,f)
+
