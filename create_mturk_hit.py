@@ -14,7 +14,7 @@ mturk = boto3.client('mturk',
 print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
 
 hit_list = [] #Haha
-with open('test_hit.xml','r') as f:
+with open('test.xml','r') as f:
     test_hit = f.read()
 
 new_hit = mturk.create_hit(
