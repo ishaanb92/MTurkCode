@@ -1,7 +1,4 @@
-import numpy as np
-import os
-import pandas as pd
-
+#!/usr/bin/env python3
 
 def generate_url_struct():
     base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/faces_db'
