@@ -12,19 +12,19 @@ mturk = boto3.client('mturk',
 
 print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
 
-with open('questions.xml','r') as f:
-    question = f.read()
+with open('test_hit.xml','r') as f:
+    test_hit = f.read()
 
 new_hit = mturk.create_hit(
-    Title = 'Is this Tweet happy, angry, excited, scared, annoyed or upset?',
-    Description = 'Read this tweet and type out one word to describe the emotion of the person posting it: happy, angry, scared, annoyed or upset',
+    Title = 'Finding similar images',
+    Description = 'Given are sets of 3 images, select which image looks more like the original image',
     Keywords = 'text, quick, labeling',
     Reward = '0.15',
     MaxAssignments = 1,
     LifetimeInSeconds = 172800,
-    AssignmentDurationInSeconds = 600,
+    AssignmentDurationInSeconds = 10*60*60,
     AutoApprovalDelayInSeconds = 14400,
-    Question = question
+    Question = test_hit
 )
 
 print ("A new HIT has been created. You can preview it here:")
