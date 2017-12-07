@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import pickle
+
 def generate_url_struct():
     base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/faces_db'
     image_names = ['gen_1850.jpg','gen_1900.jpg','gen_1950.jpg','noisy_0.jpg','noisy_1.jpg']
@@ -15,7 +17,9 @@ def generate_url_struct():
                 single_pair.append(folder_url + '/gen/' + item)
             struct_row.append(single_pair)
         url_struct.append(struct_row)
-    return url_struct
+    #Save the struct
+    with open('url_struct.pkl','wb') as f:
+        pickle.dump(url_struct,f)
 
 
 def generate_pairs(imgList):
@@ -31,5 +35,5 @@ def generate_pairs(imgList):
     return pairsList
 
 if __name__ == '__main__':
-    url_struct = generate_url_struct()
+    generate_url_struct()
 
