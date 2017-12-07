@@ -19,7 +19,7 @@ new_hit = mturk.create_hit(
     Title = 'Finding similar images',
     Description = 'Given are sets of 3 images, select which image looks more like the original image',
     Keywords = 'text, quick, labeling',
-    Reward = '0.15',
+    Reward = '0.01',
     MaxAssignments = 1,
     LifetimeInSeconds = 172800,
     AssignmentDurationInSeconds = 10*60*60,
@@ -27,5 +27,7 @@ new_hit = mturk.create_hit(
     Question = test_hit
 )
 
+
 print ("A new HIT has been created. You can preview it here:")
 print ("https://workersandbox.mturk.com/mturk/preview?groupId=" + new_hit['HIT']['HITGroupId'])
+print ("HITID = " + new_hit['HIT']['HITId'] + " (Use to Get Results)")
