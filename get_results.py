@@ -2,7 +2,7 @@ import boto3
 import pickle
 import xmltodict
 import numpy as np
-
+import pandas as pd
 
 def get_hit_answer(mturk,hit_id):
 
@@ -37,7 +37,10 @@ def generate_result_table(hit_dict,hit_answer):
                 single_row.append(answer)
                 result.append(single_row)
 
-    return result
+    result = np.asarray(result)
+    df = pd.DataFrame(data=result,columns = ['HIT ID','Worker ID','Original Image','Generated Image 1','Generated Image 2','Answer'])
+    return df
+
 
 
 if __name__ == '__main__':
@@ -57,7 +60,10 @@ if __name__ == '__main__':
     for hit_id in hit_dict:
         hit_answer[hit_id] = get_hit_answer(mturk = mturk, hit_id = hit_id)
 
-    print(np.asarray(generate_result_table(hit_dict,hit_answer)))
+    df = generate_result_table(hit_dict,hit_answer)
+    # Save as CSV
+    df.to_csv('single_user_single_hit.csv')
+
 
 
 
