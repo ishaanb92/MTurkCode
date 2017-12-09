@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import boto3
 import pickle
-import generate_hit
+import generate_question
 
 def create_hit(mturk,question):
     """
@@ -27,6 +27,9 @@ def create_hit(mturk,question):
 def create_question(url_struct,question_num,num_images,pair_num):
     """
     Creates HTML (with XML wrapper) question form needed for a single HIT
+    question_num : 0 - 500 (images) [row index in URL struct]
+    num_images : Number of images in a single HIT, programmable 1-N
+    pair_num : 1 - 9, index for each generated pair of the original image [coloumn in URL struct]
 
     """
     merged_questions = ""
@@ -68,9 +71,6 @@ if __name__ == '__main__':
     hit_dict = {}
     url_struct = get_url_struct(filename = 'url_struct.pkl')
     question,images_per_hit = create_question(url_struct,question_num = 0,num_images = 10, pair_num = 1)
-    with open('debug.xml','w') as f:
-        f.write(question)
-
     hit = create_hit(mturk=mturk,question=question)
     hit_dict[hit['HITId']] = images_per_hit
     print ("A new HIT has been created. You can preview it here:")
