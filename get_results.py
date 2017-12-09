@@ -1,7 +1,7 @@
 import boto3
 import pickle
 import xmltodict
-
+import numpy as np
 
 
 def get_hit_answer(mturk,hit_id):
@@ -23,6 +23,22 @@ def get_hit_answer(mturk,hit_id):
         worker_answer_dict[assignment['WorkerId']] = single_worker_answers
     return worker_answer_dict
 
+def generate_result_table(hit_dict,hit_answer):
+    result = []
+    # Fill in input rows
+    for hit_id in hit_answer:
+        for user in hit_answer[hit_id]:
+            for answer,question in zip(hit_answer[hit_id][user],hit_dict[hit_id]):
+                single_row = []
+                single_row.append(hit_id)
+                single_row.append(user)
+                for image_url in question:
+                    single_row.append(image_url)
+                single_row.append(answer)
+                result.append(single_row)
+
+    return result
+
 
 if __name__ == '__main__':
 
@@ -41,7 +57,8 @@ if __name__ == '__main__':
     for hit_id in hit_dict:
         hit_answer[hit_id] = get_hit_answer(mturk = mturk, hit_id = hit_id)
 
-    print(hit_answer)
+    print(np.asarray(generate_result_table(hit_dict,hit_answer)))
+
 
 
 
