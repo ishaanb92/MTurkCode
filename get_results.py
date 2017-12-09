@@ -24,6 +24,11 @@ def get_hit_answer(mturk,hit_id):
     return worker_answer_dict
 
 def generate_result_table(hit_dict,hit_answer):
+    """
+    Generates a result table from the generated answers
+    This result table will be processed to generate the similarity label
+
+    """
     result = []
     # Fill in input rows
     for hit_id in hit_answer:
