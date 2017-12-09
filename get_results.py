@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     df = generate_result_table(hit_dict,hit_answer)
     # Save as CSV
-    df.to_csv('single_user_single_hit.csv')
+    df.to_csv('results.csv')
 
 
 

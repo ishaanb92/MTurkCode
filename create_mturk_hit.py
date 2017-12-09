@@ -24,7 +24,7 @@ def create_hit(mturk,question):
 
     return new_hit['HIT']
 
-def create_question(url_struct,question_num,num_images,pair_num):
+def create_question(url_struct,image_idx,num_images,pair_num):
     """
     Creates HTML (with XML wrapper) question form needed for a single HIT
     Returns created question and list of image triples part of the HIT
@@ -32,7 +32,7 @@ def create_question(url_struct,question_num,num_images,pair_num):
     """
     merged_questions = ""
     images_per_hit = []
-    for image_num in range(question_num,question_num+num_images):
+    for image_num in range(image_idx,image_idx+num_images):
         image_triple = []
         merged_questions += generate_question.generate_single_question(url_struct[image_num][0],url_struct[image_num][pair_num][0],url_struct[image_num][pair_num][1])
         image_triple.append(url_struct[image_num][0])
@@ -54,18 +54,18 @@ def get_url_struct(filename):
         url_struct = pickle.load(f)
     return url_struct
 
-def generate_single_hit(mturk,url_struct,question_num,num_images,pair_num,hit_dict):
+def generate_single_hit(mturk,url_struct,image_idx,num_images,pair_num,hit_dict):
     """
     Generates single HIT
     Returns updated dictionary that maintains HITID : Image triples mapping
-    question_num : 0 - 500 (images) [row index in URL struct]
+    image_idx : 0 - 500 (images) [row index in URL struct]
     num_images : Number of images in a single HIT, programmable 1-N
     pair_num : 1 - 9, index for each generated pair of the original image [coloumn in URL struct]
 
     """
 
     question,images_per_hit = create_question(url_struct,
-                                              question_num = question_num,
+                                              image_idx = image_idx,
                                               num_images = num_images,
                                               pair_num = pair_num)
 
@@ -99,16 +99,20 @@ if __name__ == '__main__':
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
 
-    hit_dict = {}
+    hit_dict = {} # Updated with every HIT generated
 
     url_struct = get_url_struct('url_struct.pkl')
 
-    hit_dict = generate_single_hit(mturk=mturk,
-                                   url_struct=url_struct,
-                                   question_num = 0,
-                                   pair_num = 1,
-                                   num_images = 10,
-                                   hit_dict = hit_dict)
+    num_hits = 5
+
+    for step in range(num_hits):
+        image_idx = step*10
+        hit_dict = generate_single_hit(mturk=mturk,
+                                       url_struct=url_struct,
+                                       image_idx = image_idx,
+                                       pair_num = 1,
+                                       num_images = 10,
+                                       hit_dict = hit_dict)
 
     save_hit_dict('hit_dict.pkl',hit_dict)
 
