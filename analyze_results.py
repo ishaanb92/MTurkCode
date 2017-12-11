@@ -42,7 +42,7 @@ def create_image_list(image_row):
 
 def analyze_original_image(image_row,df):
     """
-    Return statistics for all pairs of a given
+    Return count based score for all generated images of a given
     original image
 
     """
@@ -50,14 +50,14 @@ def analyze_original_image(image_row,df):
     gen_images = create_image_list(image_row = image_row)
     score_dict = {key : 0 for key in gen_images}
     for key in score_dict:
-        score_dict[key] = imageFrame[imageFrame['Answer'] == key].shape[0] # TODO : Normalize this
-    print(score_dict)
-
+        num_times_shown = imageFrame[(imageFrame['Generated Image 1'] == key)].shape[0] + imageFrame[(imageFrame['Generated Image 2'] == key)].shape[0]
+        score_dict[key] = (imageFrame[imageFrame['Answer'] == key].shape[0])/num_times_shown
+    return score_dict
 
 
 if __name__ == '__main__':
     df = read_results('results_all_pairs.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    analyze_original_image(image_row = url_struct[0],
+    score_dict = analyze_original_image(image_row = url_struct[0],
                            df = df)
 
