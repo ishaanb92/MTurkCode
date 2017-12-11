@@ -54,10 +54,36 @@ def analyze_original_image(image_row,df):
         score_dict[key] = (imageFrame[imageFrame['Answer'] == key].shape[0])/num_times_shown
     return score_dict
 
+def analyze_pairwise(image_row,df):
+    """
+    Does pairwise analysis instead of overall count
+    Generates a dict that can used to be create a graph
+    """
+    imageFrame = return_image_subframe(image_url = image_row[0],df = df)
+    pair_dict = {}
+    for idx in range(1,10):
+        pair_dict[tuple(image_row[idx])] = None # Lists are mutable, hence can't be used as keys for dicts
+
+    for keys in pair_dict:
+        pairFrame = imageFrame[(imageFrame['Generated Image 1'] == keys[0]) & (imageFrame['Generated Image 2'] == keys[1])]
+        # Compare which image has been the "Answer" more times in the pair
+        if pairFrame[pairFrame['Answer'] == keys[0]].shape[0] > pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
+            pair_dict[tuple(keys)] = keys[0]
+        elif pairFrame[pairFrame['Answer'] == keys[0]].shape[0] <  pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
+            pair_dict[tuple(keys)] = keys[1]
+        else:
+            pair_dict[tuple(keys)] = "Equal or Unsure"
+
+    return pair_dict
+
+
 
 if __name__ == '__main__':
     df = read_results('results_all_pairs.csv')
     url_struct = read_url_struct('url_struct.pkl')
     score_dict = analyze_original_image(image_row = url_struct[0],
-                           df = df)
+                                        df = df)
+    pair_dict = analyze_pairwise(image_row = url_struct[0],
+                                 df = df)
+    print(pair_dict)
 
