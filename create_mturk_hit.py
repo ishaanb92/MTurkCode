@@ -44,6 +44,29 @@ def create_question(url_struct,image_idx,num_images,pair_num):
 
     return question,images_per_hit
 
+def create_question_single_image(url_struct,image_idx):
+    """
+    Creates HTML (with XML wrapper) question form needed for a single HIT
+    Returns created question and list of image triples part of the HIT
+
+    Test function :: Creates a HIT with pairs generated from a single image,
+                     used to verify ordering within generated images of the same
+                     original image [DO NOT USE THIS TO GENERATE HITS LAUNCHED ON MTURK, ONLY SANDBOX]
+
+    """
+    merged_questions = ""
+    images_per_hit = []
+    for pair in range(1,10):
+        image_triple = []
+        merged_questions += generate_question.generate_single_question_single_image(url_struct[image_idx][0],url_struct[image_idx][pair][0],url_struct[image_idx][pair][1],qid = pair)
+        image_triple.append(url_struct[image_idx][0])
+        image_triple.append(url_struct[image_idx][pair][0])
+        image_triple.append(url_struct[image_idx][pair][1])
+        images_per_hit.append(image_triple)
+
+    question = generate_question.generate_html_question(merged_questions = merged_questions)
+
+    return question,images_per_hit
 def get_url_struct(filename):
 
     """
@@ -68,6 +91,26 @@ def generate_single_hit(mturk,url_struct,image_idx,num_images,pair_num,hit_dict)
                                               image_idx = image_idx,
                                               num_images = num_images,
                                               pair_num = pair_num)
+
+    hit = create_hit(mturk=mturk,question=question)
+    hit_dict[hit['HITId']] = images_per_hit #Update the dictionary
+    print ("A new HIT has been created. You can preview it here:")
+    print ("https://workersandbox.mturk.com/mturk/preview?groupId=" + hit['HITGroupId'])
+    print ("HITID = " + hit['HITId']+ " (Use to Get Results)")
+    return hit_dict
+
+def generate_single_hit_single_image(mturk,url_struct,image_idx,hit_dict):
+    """
+    Generates single HIT from single original image containing all generated pairs
+    Returns updated dictionary that maintains HITID : Image triples mapping
+
+    Test function :: DO NOT USE TO GENERATE HITS ON MTURK
+
+    """
+
+    question,images_per_hit = create_question_single_image(url_struct,
+                                                           image_idx = image_idx
+                                                          )
 
     hit = create_hit(mturk=mturk,question=question)
     hit_dict[hit['HITId']] = images_per_hit #Update the dictionary
@@ -104,6 +147,11 @@ if __name__ == '__main__':
     url_struct = get_url_struct('url_struct.pkl')
 
     num_hits = 5
+
+   # hit_dict = generate_single_hit_single_image(mturk = mturk,
+   #                                             url_struct = url_struct,
+   #                                             image_idx = 0,
+   #                                             hit_dict = hit_dict)
 
     for step in range(num_hits):
         image_idx = step*10

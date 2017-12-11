@@ -34,6 +34,45 @@ def generate_single_question(original,image1,image2):
 
     return question
 
+
+def generate_single_question_single_image(original,image1,image2,qid):
+    """
+    Generates a single question i.e. for a given original image
+    and a pair of generated images
+
+    Returns the question string
+
+    Test function :: Generate HIT question for single image + all pairs
+
+    """
+
+    question = """
+       <div>
+         <img src="{0}" alt="Original" width="64" height="64">
+         <p> Original </p>
+
+         <img src="{1}" alt="Image A" width="64" height="64">
+         <p> Image A </p>
+
+         <img src="{2}" alt="Image B" width="64" height="64">
+         <p> Image B </p>
+         <input type="radio" id="{1}_{3}" name="{0}_{3}" value="{1}">
+         <label for="{1}_{3}">Image A</label>
+
+         <input type="radio" id="{2}_{3}" name="{0}_{3}" value="{2}">
+         <label for="{2}_{3}">Image B</label>
+
+         <input type="radio" id="{0}_{3}" name="{0}_{3}" value="Unsure">
+         <label for="{0}_{3}">Unsure</label>
+       </div>
+       <!-- 1 question ends -->
+    """.format(
+        original,
+        image1,
+        image2,
+        qid)
+
+    return question
 def generate_html_question(merged_questions):
     """
     Generates the final XML needed to create HIT
