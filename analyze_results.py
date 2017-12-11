@@ -1,8 +1,6 @@
 import pandas as pd
 import pickle
 
-
-
 def read_results(filename):
     """
     Return pandas dataframe for the results CSV file
@@ -29,6 +27,15 @@ def read_url_struct(filename):
     with open(filename,'rb') as f:
         url_struct = pickle.load(f)
     return url_struct
+
+def analyze_original_image(image_url,df):
+    """
+    Return statistics for all pairs of a given
+    original image
+
+    """
+    imageFrame = return_image_subframe(image_url = image_url,df=df)
+
 
 if __name__ == '__main__':
     df = read_results('results_all_pairs.csv')

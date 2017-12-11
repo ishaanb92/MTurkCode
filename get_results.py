@@ -22,7 +22,7 @@ def get_hit_answer(mturk,hit_id):
         for answer_field in answer_dict['QuestionFormAnswers']['Answer']:
             single_worker_answers.append(answer_field['FreeText'])
         worker_answer_dict[assignment['WorkerId']] = single_worker_answers
-        worker_time_dict[assignment['WorkerId']] = worker_results['Assignment']['SubmitTime']
+        worker_time_dict[assignment['WorkerId']] = assignment['SubmitTime']
     return worker_answer_dict,worker_time_dict
 
 def generate_result_table(hit_dict,hit_answer,hit_time):
