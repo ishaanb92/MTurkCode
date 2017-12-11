@@ -104,8 +104,12 @@ if __name__ == '__main__':
     url_struct = read_url_struct('url_struct.pkl')
     score_dict = analyze_original_image(image_row = url_struct[0],
                                         df = df)
+    s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
+    for k,v in s:
+        print('{} {}'.format(k,v))
+
     dg = generate_directed_graph(image_row = url_struct[0],
-                            df = df)
+                                 df = df)
     nx.draw_networkx(dg)
     plt.show()
 
