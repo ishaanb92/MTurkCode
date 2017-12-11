@@ -1,6 +1,9 @@
 import pandas as pd
 import pickle
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
 
 def read_results(filename):
     """
@@ -76,6 +79,24 @@ def analyze_pairwise(image_row,df):
 
     return pair_dict
 
+def generate_directed_graph(image_row,df):
+    """
+    Generates a directed graph based on pairwise
+    comparisions
+
+    """
+    dg = nx.DiGraph()
+    pairwise_dict = analyze_pairwise(image_row = image_row,df = df)
+    image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
+    dg.add_nodes_from(image_list)
+    for pairs in pairwise_dict:
+        if pairwise_dict[pairs] == pairs[0]:
+            dg.add_edge(pairs[0],pairs[1])
+        elif pairwise_dict[pairs] == pairs[1]:
+            dg.add_edge(pairs[1],pairs[0])
+        else:
+            continue
+    return dg
 
 
 if __name__ == '__main__':
@@ -83,7 +104,9 @@ if __name__ == '__main__':
     url_struct = read_url_struct('url_struct.pkl')
     score_dict = analyze_original_image(image_row = url_struct[0],
                                         df = df)
-    pair_dict = analyze_pairwise(image_row = url_struct[0],
-                                 df = df)
-    print(pair_dict)
+    dg = generate_directed_graph(image_row = url_struct[0],
+                            df = df)
+    nx.draw_networkx(dg)
+    plt.show()
+
 
