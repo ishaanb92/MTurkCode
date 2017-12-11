@@ -1,5 +1,6 @@
 import pandas as pd
 import pickle
+import numpy as np
 
 def read_results(filename):
     """
@@ -28,17 +29,35 @@ def read_url_struct(filename):
         url_struct = pickle.load(f)
     return url_struct
 
-def analyze_original_image(image_url,df):
+def create_image_list(image_row):
+    """
+    Creates list of generated images per original image from pairs list
+
+    """
+    image_list = []
+    for idx in range(1,10):
+        for image_url in image_row[idx]:
+            image_list.append(image_url)
+    return list(set(image_list))
+
+def analyze_original_image(image_row,df):
     """
     Return statistics for all pairs of a given
     original image
 
     """
-    imageFrame = return_image_subframe(image_url = image_url,df=df)
+    imageFrame = return_image_subframe(image_url = image_row[0],df=df)
+    gen_images = create_image_list(image_row = image_row)
+    score_dict = {key : 0 for key in gen_images}
+    for key in score_dict:
+        score_dict[key] = imageFrame[imageFrame['Answer'] == key].shape[0] # TODO : Normalize this
+    print(score_dict)
+
 
 
 if __name__ == '__main__':
     df = read_results('results_all_pairs.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    subF = return_image_subframe(image_url = url_struct[0][0],df = df)
+    analyze_original_image(image_row = url_struct[0],
+                           df = df)
 
