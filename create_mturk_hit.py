@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     url_struct = get_url_struct('url_struct.pkl')
 
-    num_hits = 5
+    num_hits = 1
 
    # hit_dict = generate_single_hit_single_image(mturk = mturk,
    #                                             url_struct = url_struct,

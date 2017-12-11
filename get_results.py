@@ -15,15 +15,17 @@ def get_hit_answer(mturk,hit_id):
     print('Results for HIT ID : {}'.format(hit_id))
     #Dictionary to maintain a mapping between worker ID and answers provided by that worker
     worker_answer_dict = {}
+    worker_time_dict = {}
     for assignment in worker_results['Assignments']: # Each "assignment" is again a dictionary with the answer value stored against "Answer" key
         answer_dict = xmltodict.parse(assignment['Answer'])
         single_worker_answers = []
         for answer_field in answer_dict['QuestionFormAnswers']['Answer']:
             single_worker_answers.append(answer_field['FreeText'])
         worker_answer_dict[assignment['WorkerId']] = single_worker_answers
-    return worker_answer_dict
+        worker_time_dict[assignment['WorkerId']] = worker_results['Assignment']['SubmitTime']
+    return worker_answer_dict,worker_time_dict
 
-def generate_result_table(hit_dict,hit_answer):
+def generate_result_table(hit_dict,hit_answer,hit_time):
     """
     Generates a result table from the generated answers
     This result table will be processed to generate the similarity label
@@ -37,13 +39,14 @@ def generate_result_table(hit_dict,hit_answer):
                 single_row = []
                 single_row.append(hit_id)
                 single_row.append(user)
+                single_row.append(hit_time[hit_id][user])
                 for image_url in question:
                     single_row.append(image_url)
                 single_row.append(answer)
                 result.append(single_row)
 
     result = np.asarray(result)
-    df = pd.DataFrame(data=result,columns = ['HIT ID','Worker ID','Original Image','Generated Image 1','Generated Image 2','Answer'])
+    df = pd.DataFrame(data=result,columns = ['HIT ID','Worker ID','TimeStamp','Original Image','Generated Image 1','Generated Image 2','Answer'])
     return df
 
 
@@ -62,10 +65,11 @@ if __name__ == '__main__':
         hit_dict = pickle.load(f)
 
     hit_answer = {}
+    hit_time = {}
     for hit_id in hit_dict:
-        hit_answer[hit_id] = get_hit_answer(mturk = mturk, hit_id = hit_id)
+        hit_answer[hit_id],hit_time[hit_id] = get_hit_answer(mturk = mturk, hit_id = hit_id)
 
-    df = generate_result_table(hit_dict,hit_answer)
+    df = generate_result_table(hit_dict,hit_answer,hit_time)
     # Save as CSV
     df.to_csv('results.csv')
 
