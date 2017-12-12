@@ -112,7 +112,7 @@ def find_cycles(g):
         print('Cycle {}'.format(cycle_list.index(cycle)))
         for node in cycle:
             print('{} -->'.format(node),end = '',flush = True)
-        print('{}'.format(cycle[0]))
+        print('{}'.format(cycle[0])) #Print first node of cycle for completeness and easier interpretation
         print('\n')
 
     return cycle_list
