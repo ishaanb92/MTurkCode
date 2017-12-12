@@ -99,6 +99,14 @@ def generate_directed_graph(image_row,df):
             dg.add_edge(pairs[1],pairs[0],weight = pairwise_dict[pairs][1])
         else:
             continue
+
+    # Noisy_0 > Noisy_1, so add an edge
+    original_url = image_row[0]
+    base_url = original_url.replace('original.jpg','')
+    noisy_url_0 = base_url + 'gen/' + 'noisy_0.jpg'
+    noisy_url_1 = base_url + 'gen/' + 'noisy_1.jpg'
+    dg.add_edge(noisy_url_0,noisy_url_1,weight = 1.0)
+
     return dg
 
 def find_cycles(g):
@@ -127,6 +135,7 @@ def draw_graph(g):
     nx.draw_networkx(dg,pos=nx.circular_layout(g))
     labels = nx.get_edge_attributes(g,'weight')
     nx.draw_networkx_edge_labels(g,pos = nx.circular_layout(g),labels = labels)
+    plt.xlim((-1,3))
     plt.show()
 
 if __name__ == '__main__':
@@ -135,6 +144,7 @@ if __name__ == '__main__':
     score_dict = analyze_original_image(image_row = url_struct[0],
                                         df = df)
     s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
+    print('Count based scores')
     for k,v in s:
         print('{} {}'.format(k,v))
 
