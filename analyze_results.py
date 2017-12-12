@@ -101,15 +101,31 @@ def generate_directed_graph(image_row,df):
             continue
     return dg
 
+def find_cycles(g):
+    """
+    Returns list of cycles in the directed graph
+
+    """
+    cycle_list =  list(nx.simple_cycles(g))
+    print('Number of cycles found : {}'.format(len(cycle_list)))
+    for cycle in cycle_list:
+        print('Cycle {}'.format(cycle_list.index(cycle)))
+        for node in cycle:
+            print('{} -->'.format(node),end = '',flush = True)
+        print('\n')
+
+    return cycle_list
+
+
 def draw_graph(g):
     """
     Generates visualization for the pairwise graph
     DEBUG-ONLY feature
 
     """
-    nx.draw_networkx(dg,pos=nx.circular_layout(dg))
-    labels = nx.get_edge_attributes(dg,'weight')
-    nx.draw_networkx_edge_labels(dg,pos = nx.circular_layout(dg),labels = labels)
+    nx.draw_networkx(dg,pos=nx.circular_layout(g))
+    labels = nx.get_edge_attributes(g,'weight')
+    nx.draw_networkx_edge_labels(g,pos = nx.circular_layout(g),labels = labels)
     plt.show()
 
 if __name__ == '__main__':
@@ -123,6 +139,8 @@ if __name__ == '__main__':
 
     dg = generate_directed_graph(image_row = url_struct[0],
                                  df = df)
+
+    cycle_list = find_cycles(g = dg)
     draw_graph(g=dg)
 
 
