@@ -101,6 +101,16 @@ def generate_directed_graph(image_row,df):
             continue
     return dg
 
+def draw_graph(g):
+    """
+    Generates visualization for the pairwise graph
+    DEBUG-ONLY feature
+
+    """
+    nx.draw_networkx(dg,pos=nx.circular_layout(dg))
+    labels = nx.get_edge_attributes(dg,'weight')
+    nx.draw_networkx_edge_labels(dg,pos = nx.circular_layout(dg),labels = labels)
+    plt.show()
 
 if __name__ == '__main__':
     df = read_results('results_all_pairs.csv')
@@ -113,9 +123,6 @@ if __name__ == '__main__':
 
     dg = generate_directed_graph(image_row = url_struct[0],
                                  df = df)
-    nx.draw_networkx(dg,pos=nx.circular_layout(dg))
-    labels = nx.get_edge_attributes(dg,'weight')
-    nx.draw_networkx_edge_labels(dg,pos = nx.circular_layout(dg),labels = labels)
-    plt.show()
+    draw_graph(g=dg)
 
 
