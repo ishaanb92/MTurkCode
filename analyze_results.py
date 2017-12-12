@@ -69,13 +69,16 @@ def analyze_pairwise(image_row,df):
 
     for keys in pair_dict:
         pairFrame = imageFrame[(imageFrame['Generated Image 1'] == keys[0]) & (imageFrame['Generated Image 2'] == keys[1])]
+        num_compares = pairFrame.shape[0]
         # Compare which image has been the "Answer" more times in the pair
         if pairFrame[pairFrame['Answer'] == keys[0]].shape[0] > pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
-            pair_dict[tuple(keys)] = keys[0]
+            num_wins = pairFrame[pairFrame['Answer'] == keys[0]].shape[0]
+            pair_dict[tuple(keys)] = [keys[0],num_wins/num_compares]
         elif pairFrame[pairFrame['Answer'] == keys[0]].shape[0] <  pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
-            pair_dict[tuple(keys)] = keys[1]
+            num_wins = pairFrame[pairFrame['Answer'] == keys[1]].shape[0]
+            pair_dict[tuple(keys)] = [keys[1],num_wins/num_compares]
         else:
-            pair_dict[tuple(keys)] = "Equal or Unsure"
+            pair_dict[tuple(keys)] = ["Equal or Unsure",0]
 
     return pair_dict
 
@@ -90,10 +93,10 @@ def generate_directed_graph(image_row,df):
     image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
     dg.add_nodes_from(image_list)
     for pairs in pairwise_dict:
-        if pairwise_dict[pairs] == pairs[0]:
-            dg.add_edge(pairs[0],pairs[1])
-        elif pairwise_dict[pairs] == pairs[1]:
-            dg.add_edge(pairs[1],pairs[0])
+        if pairwise_dict[pairs][0] == pairs[0]:
+            dg.add_edge(pairs[0],pairs[1],weight = pairwise_dict[pairs][1])
+        elif pairwise_dict[pairs][0] == pairs[1]:
+            dg.add_edge(pairs[1],pairs[0],weight = pairwise_dict[pairs][1])
         else:
             continue
     return dg
@@ -110,7 +113,9 @@ if __name__ == '__main__':
 
     dg = generate_directed_graph(image_row = url_struct[0],
                                  df = df)
-    nx.draw_networkx(dg)
+    nx.draw_networkx(dg,pos=nx.circular_layout(dg))
+    labels = nx.get_edge_attributes(dg,'weight')
+    nx.draw_networkx_edge_labels(dg,pos = nx.circular_layout(dg),labels = labels)
     plt.show()
 
 
