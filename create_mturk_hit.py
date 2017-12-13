@@ -2,6 +2,7 @@
 import boto3
 import pickle
 import generate_question
+from get_creds import *
 
 def create_hit(mturk,question):
     """
@@ -133,9 +134,11 @@ if __name__ == '__main__':
 
     MTURK_SANDBOX = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 
+    access_key,secret_access_key = get_creds('credentials.csv')
+
     mturk = boto3.client('mturk',
-                        aws_access_key_id = "AKIAI4DQ22LGP4HC3X4Q",
-                        aws_secret_access_key = "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",
+                        aws_access_key_id = access_key,
+                        aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
                         endpoint_url = MTURK_SANDBOX
                         )
