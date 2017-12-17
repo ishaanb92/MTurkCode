@@ -3,11 +3,11 @@
 import pickle
 
 def generate_url_struct():
-    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/faces_db'
-    image_names = ['gen_1850.jpg','gen_1900.jpg','gen_1950.jpg','noisy_0.jpg','noisy_1.jpg']
+    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/mturk_db'
+    image_names = ['ae.jpg','ce.jpg','gan.jpg','noisy_0.jpg']
     pairs = generate_pairs(image_names)
     url_struct = []
-    for folder in range(500):
+    for folder in range(512):
         struct_row = []
         folder_url = base_url + '/' + str(folder)
         struct_row.append(folder_url+'/original.jpg')
@@ -26,8 +26,6 @@ def generate_pairs(imgList):
     pairsList = []
     for idx in range(len(imgList)):
         for idx_2 in range(idx+1,len(imgList)):
-            if imgList[idx] == 'noisy_0.jpg' and imgList[idx_2] == 'noisy_1.jpg':
-                continue # Noisy pair not considered as a pair for comparision
             pair = []
             pair.append(imgList[idx])
             pair.append(imgList[idx_2])
@@ -36,4 +34,8 @@ def generate_pairs(imgList):
 
 if __name__ == '__main__':
     generate_url_struct()
+    # Test
+    with open('url_struct.pkl','rb') as f:
+        url_struct = pickle.load(f)
+    print(url_struct[0])
 

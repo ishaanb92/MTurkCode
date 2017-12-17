@@ -8,15 +8,23 @@ def generate_single_question(original,image1,image2):
     """
 
     question = """
-       <div>
-         <img src="{0}" alt="Original" width="64" height="64">
-         <p> Original </p>
 
+      <div class = "container">
          <img src="{1}" alt="Image A" width="64" height="64">
          <p> Image A </p>
+       </div>
 
+       <div class = "container">
+         <img src="{0}" alt="Original" width="64" height="64">
+         <p> Original </p>
+       </div>
+
+        <div class = "container">
          <img src="{2}" alt="Image B" width="64" height="64">
          <p> Image B </p>
+        </div>
+         <br>
+       <div>
          <input type="radio" id="{1}" name="{0}" value="{1}">
          <label for="{1}">Image A</label>
 
@@ -25,6 +33,9 @@ def generate_single_question(original,image1,image2):
 
          <input type="radio" id="{0}" name="{0}" value="Unsure">
          <label for="{0}">Unsure</label>
+         <br>
+         <br>
+         <br>
        </div>
        <!-- 1 question ends -->
     """.format(
@@ -47,15 +58,22 @@ def generate_single_question_single_image(original,image1,image2,qid):
     """
 
     question = """
-       <div>
+       <div class = "container">
          <img src="{0}" alt="Original" width="64" height="64">
          <p> Original </p>
+       </div>
 
+        <div class = "container">
          <img src="{1}" alt="Image A" width="64" height="64">
          <p> Image A </p>
+        </div>
 
+        <div class = "container">
          <img src="{2}" alt="Image B" width="64" height="64">
          <p> Image B </p>
+        </div>
+        <br/>
+        <div class = "container">
          <input type="radio" id="{1}_{3}" name="{0}_{3}" value="{1}">
          <label for="{1}_{3}">Image A</label>
 
@@ -64,7 +82,8 @@ def generate_single_question_single_image(original,image1,image2,qid):
 
          <input type="radio" id="{0}_{3}" name="{0}_{3}" value="Unsure">
          <label for="{0}_{3}">Unsure</label>
-       </div>
+        </div>
+
        <!-- 1 question ends -->
     """.format(
         original,
@@ -90,6 +109,15 @@ def generate_html_question(merged_questions):
          <head>
          <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
          <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+          <style>
+            div.container {
+              display:inline-block;
+            }
+
+            p {
+              text-align:center;
+            }
+          </style>
          </head>
          <body>
          <form name='mturk_form' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'><input type='hidden' value='' name='assignmentId'                id='assignmentId'/>
