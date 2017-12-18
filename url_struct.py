@@ -3,7 +3,7 @@
 import pickle
 
 def generate_url_struct():
-    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/mturk_db'
+    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/mutrk_db_fixed'
     image_names = ['ae.jpg','ce.jpg','gan.jpg','noisy_0.jpg']
     pairs = generate_pairs(image_names)
     url_struct = []

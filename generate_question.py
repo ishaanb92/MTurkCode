@@ -26,11 +26,11 @@ def generate_single_question(original,image1,image2):
          <br>
        <div>
          <input type="radio" id="{1}" name="{0}" value="{1}">
-         <label for="{1}">Image A</label>
-
+         <label for="{1}"></label>
+         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
          <input type="radio" id="{2}" name="{0}" value="{2}">
-         <label for="{2}">Image B</label>
-
+         <label for="{2}"></label>
+         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
          <input type="radio" id="{0}" name="{0}" value="Unsure">
          <label for="{0}">Unsure</label>
          <br>
@@ -75,11 +75,11 @@ def generate_single_question_single_image(original,image1,image2,qid):
         <br/>
         <div class = "container">
          <input type="radio" id="{1}_{3}" name="{0}_{3}" value="{1}">
-         <label for="{1}_{3}">Image A</label>
-
+         <label for="{1}_{3}"></label>
+         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
          <input type="radio" id="{2}_{3}" name="{0}_{3}" value="{2}">
-         <label for="{2}_{3}">Image B</label>
-
+         <label for="{2}_{3}"></label>
+         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
          <input type="radio" id="{0}_{3}" name="{0}_{3}" value="Unsure">
          <label for="{0}_{3}">Unsure</label>
         </div>
@@ -107,20 +107,23 @@ def generate_html_question(merged_questions):
          <!DOCTYPE html>
          <html>
          <head>
-         <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-         <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
-          <style>
-            div.container {
-              display:inline-block;
-            }
+             <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+             <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+              <style>
+                div.container {
+                  display:inline-block;
+                }
 
-            p {
-              text-align:center;
-            }
-          </style>
+                p {
+                  text-align:center;
+                }
+              </style>
+              <style type="text/css">
+                input[type="radio"]{margin: 0 10px 0 25px};}
+              </style>
          </head>
          <body>
-         <form name='mturk_form' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'><input type='hidden' value='' name='assignmentId'                id='assignmentId'/>
+         <form name='helvetica' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'><input type='hidden' value='' name='assignmentId'                id='assignmentId'/>
          <p>Select the between A and B, the image that seems more similar to the original, if unsure, select the "Unsure" option :</p>
         """
 
