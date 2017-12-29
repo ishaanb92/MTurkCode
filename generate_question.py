@@ -8,35 +8,34 @@ def generate_single_question(original,image1,image2):
     """
 
     question = """
+        <tr>
+          <td class="image">
+            <img src={1} alt="Image A" width="64" height="64">
+          </td>
 
-      <div class = "container">
-         <img src="{1}" alt="Image A" width="64" height="64">
-         <p> Image A </p>
-       </div>
+          <td class="image">
+            <img src={0} alt="Original" width="64" height="64">
+          </td>
 
-       <div class = "container">
-         <img src="{0}" alt="Original" width="64" height="64">
-         <p> Original </p>
-       </div>
-
-        <div class = "container">
-         <img src="{2}" alt="Image B" width="64" height="64">
-         <p> Image B </p>
-        </div>
-         <br>
-       <div>
-         <input type="radio" id="{1}" name="{0}" value="{1}">
-         <label for="{1}"></label>
-         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-         <input type="radio" id="{2}" name="{0}" value="{2}">
-         <label for="{2}"></label>
-         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-         <input type="radio" id="{0}" name="{0}" value="Unsure">
-         <label for="{0}">Unsure</label>
-         <br>
-         <br>
-         <br>
-       </div>
+          <td class="image">
+            <img src={2} alt="Image B" width="64" height="64">
+          </td>
+        </tr>
+        <tr>
+          <td class="label">Image A</td><td class="label">Original</td><td class="label">Image B</td><td class="label">Unsure</td>
+        </tr>
+        <tr>
+          <td class="radio">
+            <input id={1} name={0} value={1} type="radio">
+          </td>
+          <td></td>
+          <td class="radio">
+            <input id={2} name={0} value={2} type="radio">
+          </td>
+          <td class="radio">
+            <input id={0} name={0} value="Unsure" type="radio">
+          </td>
+        </tr>
        <!-- 1 question ends -->
     """.format(
         original,
@@ -109,25 +108,31 @@ def generate_html_question(merged_questions):
          <head>
              <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
              <script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
-              <style>
-                div.container {
-                  display:inline-block;
-                }
-
-                p {
-                  text-align:center;
-                }
-              </style>
-              <style type="text/css">
-                input[type="radio"]{margin: 0 10px 0 25px};}
-              </style>
+            <style>
+              * {
+                font-family: Helvetica, Sans-Serif;
+              }
+              td {
+                padding: 0px 20px;
+                text-align: center;
+              }
+              td.label {
+                padding-top: 5px;
+              }
+              td.image {
+                padding-top: 40px;
+              }
+            </style>
          </head>
+
          <body>
          <form name='helvetica' method='post' id='mturk_form' action='https://www.mturk.com/mturk/externalSubmit'><input type='hidden' value='' name='assignmentId'                id='assignmentId'/>
-         <p>Select the between A and B, the image that seems more similar to the original, if unsure, select the "Unsure" option :</p>
+         <p>Chose which image ("Image A" or "Image B”) looks more similar to the “Original". If you are not sure, then chose “Unsure”.</p>
+         <table>
         """
 
     lower_const_str = """
+       </table>
        <div>
          <button type="submit">Submit</button>
        </div>

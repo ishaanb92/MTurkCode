@@ -150,6 +150,7 @@ if __name__ == '__main__':
     url_struct = get_url_struct('url_struct.pkl')
 
     num_hits = 1
+    images_per_hit = 50
 
    # hit_dict = generate_single_hit_single_image(mturk = mturk,
    #                                             url_struct = url_struct,
@@ -157,12 +158,12 @@ if __name__ == '__main__':
    #                                             hit_dict = hit_dict)
 
     for step in range(num_hits):
-        image_idx = step*10
+        image_idx = step*images_per_hit
         hit_dict = generate_single_hit(mturk=mturk,
                                        url_struct=url_struct,
                                        image_idx = image_idx,
                                        pair_num = 1,
-                                       num_images = 10,
+                                       num_images = images_per_hit,
                                        hit_dict = hit_dict)
 
     save_hit_dict('hit_dict.pkl',hit_dict)
