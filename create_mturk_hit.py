@@ -3,7 +3,7 @@ import boto3
 import pickle
 import generate_question
 from get_creds import *
-
+import sys
 def create_hit(mturk,question):
     """
     Creates a single HIT using the MTurk object and the supplied XML-HTML question form
@@ -15,8 +15,8 @@ def create_hit(mturk,question):
         Title = 'Finding similar images',
         Description = 'Given are sets of 3 images, select which image looks more like the original image',
         Keywords = 'text, quick, labeling',
-        Reward = '0.01',
-        MaxAssignments = 1,
+        Reward = '0.5',
+        MaxAssignments = 5,
         LifetimeInSeconds = 172800,
         AssignmentDurationInSeconds = 600,
         AutoApprovalDelayInSeconds = 14400,
@@ -140,7 +140,7 @@ if __name__ == '__main__':
                         aws_access_key_id = access_key,
                         aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
-                        endpoint_url = MTURK_SANDBOX
+                        #endpoint_url = MTURK_SANDBOX
                         )
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
@@ -149,22 +149,19 @@ if __name__ == '__main__':
 
     url_struct = get_url_struct('url_struct.pkl')
 
-    num_hits = 1
+    num_blocks = 4
     images_per_hit = 50
+    image_row_length = len(url_struct[0])
 
-   # hit_dict = generate_single_hit_single_image(mturk = mturk,
-   #                                             url_struct = url_struct,
-   #                                             image_idx = 0,
-   #                                             hit_dict = hit_dict)
-
-    for step in range(num_hits):
-        image_idx = step*images_per_hit
-        hit_dict = generate_single_hit(mturk=mturk,
-                                       url_struct=url_struct,
-                                       image_idx = image_idx,
-                                       pair_num = 1,
-                                       num_images = images_per_hit,
-                                       hit_dict = hit_dict)
+    for pair in range(1,image_row_length):
+        for step in range(num_blocks):
+            image_idx = step*images_per_hit
+            hit_dict = generate_single_hit(mturk=mturk,
+                                           url_struct=url_struct,
+                                           image_idx = image_idx,
+                                           pair_num = pair,
+                                           num_images = images_per_hit,
+                                           hit_dict = hit_dict)
 
     save_hit_dict('hit_dict.pkl',hit_dict)
 
