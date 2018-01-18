@@ -116,7 +116,6 @@ def generate_single_hit_single_image(mturk,url_struct,image_idx,hit_dict):
     hit = create_hit(mturk=mturk,question=question)
     hit_dict[hit['HITId']] = images_per_hit #Update the dictionary
     print ("A new HIT has been created. You can preview it here:")
-    print ("https://workersandbox.mturk.com/mturk/preview?groupId=" + hit['HITGroupId'])
     print ("HITID = " + hit['HITId']+ " (Use to Get Results)")
     return hit_dict
 
