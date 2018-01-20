@@ -12,7 +12,8 @@ def get_hit_answer(mturk,hit_id):
     for the given hit ID
     """
 
-    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted'])
+    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+    print(worker_results)
     print('Results for HIT ID : {}'.format(hit_id))
     #Dictionary to maintain a mapping between worker ID and answers provided by that worker
     worker_answer_dict = {}
@@ -61,7 +62,7 @@ if __name__ == '__main__':
        aws_access_key_id = access_key,
        aws_secret_access_key = secret_access_key,
        region_name='us-east-1',
-       endpoint_url = MTURK_SANDBOX
+       #endpoint_url = MTURK_SANDBOX
     )
 
     with open('hit_dict.pkl','rb') as f:
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 
     df = generate_result_table(hit_dict,hit_answer,hit_time)
     # Save as CSV
-    df.to_csv('results.csv')
+    df.to_csv('results_live.csv')
 
 
 

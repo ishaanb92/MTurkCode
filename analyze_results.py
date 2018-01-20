@@ -38,7 +38,7 @@ def create_image_list(image_row):
 
     """
     image_list = []
-    for idx in range(1,10):
+    for idx in range(1,len(image_row)):
         for image_url in image_row[idx]:
             image_list.append(image_url)
     return list(set(image_list))
@@ -64,7 +64,8 @@ def analyze_pairwise(image_row,df):
     """
     imageFrame = return_image_subframe(image_url = image_row[0],df = df)
     pair_dict = {}
-    for idx in range(1,10):
+    row_length = len(image_row)
+    for idx in range(1,row_length):
         pair_dict[tuple(image_row[idx])] = None # Lists are mutable, hence can't be used as keys for dicts
 
     for keys in pair_dict:
@@ -79,6 +80,7 @@ def analyze_pairwise(image_row,df):
             pair_dict[tuple(keys)] = [keys[1],num_wins/num_compares]
         else:
             pair_dict[tuple(keys)] = ["Equal or Unsure",0]
+
 
     return pair_dict
 
@@ -138,20 +140,25 @@ def draw_graph(g):
     plt.xlim((-1,3))
     plt.show()
 
-if __name__ == '__main__':
-    df = read_results('results_all_pairs.csv')
-    url_struct = read_url_struct('url_struct.pkl')
-    score_dict = analyze_original_image(image_row = url_struct[0],
+def show_results(df,image_row):
+
+    score_dict = analyze_original_image(image_row = image_row,
                                         df = df)
     s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
-    print('Count based scores')
+    print('Count based scores for {}'.format(image_row[0]))
     for k,v in s:
         print('{} {}'.format(k,v))
-
-    dg = generate_directed_graph(image_row = url_struct[0],
+    dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
     cycle_list = find_cycles(g = dg)
-    draw_graph(g=dg)
+    #draw_graph(g=dg)
+
+
+if __name__ == '__main__':
+    df = read_results('results_mturk.csv')
+    url_struct = read_url_struct('url_struct.pkl')
+    for image_idx in range(50):
+        show_results(df=df,image_row = url_struct[image_idx])
 
 
