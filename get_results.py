@@ -86,6 +86,11 @@ def generate_result_table(hit_dict,hit_answer,hit_time):
 
 
 def results_sanity_check(df):
+    """
+    Function to check if answers in row are acceptable i.e.
+    conform to one of the 3 choices from the question.
+
+    """
     for image1,image2,answer in zip(df['Generated Image 1'],df['Generated Image 2'],df['Answer']):
         if answer != image1 and answer != image2 and answer != 'Unsure':
             print('Mismatch Detected')
