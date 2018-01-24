@@ -106,8 +106,6 @@ def generate_directed_graph(image_row,df):
     original_url = image_row[0]
     base_url = original_url.replace('original.jpg','')
     noisy_url_0 = base_url + 'gen/' + 'noisy_0.jpg'
-    noisy_url_1 = base_url + 'gen/' + 'noisy_1.jpg'
-    dg.add_edge(noisy_url_0,noisy_url_1,weight = 1.0)
 
     return dg
 
@@ -134,7 +132,7 @@ def draw_graph(g):
     DEBUG-ONLY feature
 
     """
-    nx.draw_networkx(dg,pos=nx.circular_layout(g))
+    nx.draw_networkx(g,pos=nx.circular_layout(g))
     labels = nx.get_edge_attributes(g,'weight')
     nx.draw_networkx_edge_labels(g,pos = nx.circular_layout(g),labels = labels)
     plt.xlim((-1,3))
@@ -152,13 +150,13 @@ def show_results(df,image_row):
                                  df = df)
 
     cycle_list = find_cycles(g = dg)
-    #draw_graph(g=dg)
+    draw_graph(g=dg)
 
 
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    for image_idx in range(50):
+    for image_idx in range(1):
         show_results(df=df,image_row = url_struct[image_idx])
 
 
