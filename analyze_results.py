@@ -117,7 +117,6 @@ def find_cycles(g):
         for node in cycle:
             print('{} -->'.format(node),end = '',flush = True)
         print('{}'.format(cycle[0])) #Print first node of cycle for completeness and easier interpretation
-        print('\n')
 
     return cycle_list
 
@@ -182,7 +181,7 @@ def show_results(df,image_row):
     sorted_graph_dict = dict_sort(score_dict = graph_score_dict)
     for k,v in sorted_graph_dict:
         print('{} {}'.format(k,v))
-    #draw_graph(g=dg)
+    print('\n')
 
 def dict_sort(score_dict):
     """
@@ -197,7 +196,7 @@ def dict_sort(score_dict):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    for image_idx in range(10):
+    for image_idx in range(200):
         show_results(df=df,image_row = url_struct[image_idx])
 
 
