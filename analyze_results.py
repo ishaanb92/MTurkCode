@@ -95,17 +95,13 @@ def generate_directed_graph(image_row,df):
     image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
     dg.add_nodes_from(image_list)
     for pairs in pairwise_dict:
+        # Who is better in THIS pair based on user votes?
         if pairwise_dict[pairs][0] == pairs[0]:
             dg.add_edge(pairs[0],pairs[1],weight = pairwise_dict[pairs][1])
         elif pairwise_dict[pairs][0] == pairs[1]:
             dg.add_edge(pairs[1],pairs[0],weight = pairwise_dict[pairs][1])
         else:
             continue
-
-    # Noisy_0 > Noisy_1, so add an edge
-    original_url = image_row[0]
-    base_url = original_url.replace('original.jpg','')
-    noisy_url_0 = base_url + 'gen/' + 'noisy_0.jpg'
 
     return dg
 
@@ -138,25 +134,70 @@ def draw_graph(g):
     plt.xlim((-1,3))
     plt.show()
 
-def show_results(df,image_row):
+def compute_graph_scores(dg):
+    """
+    Computes score for each generated image (node in the graph)
+    based on the weight and direction of the edges
 
+    """
+    graph_score_dict = {}
+    for node in dg.nodes(data=False):
+        out_weights_acc = 0
+        in_weights_acc = 0
+        for succ in dg.successors(node):
+            out_weights_acc += dg.get_edge_data(node,succ)['weight']
+        for pred in dg.predecessors(node):
+            in_weights_acc += dg.get_edge_data(pred,node)['weight']
+        score = out_weights_acc - in_weights_acc
+        graph_score_dict[node] = score
+
+    return graph_score_dict
+
+
+def show_results(df,image_row):
+    """
+    Shows the results for images generated from a
+    single original image
+
+    """
+
+    # Count-based score
     score_dict = analyze_original_image(image_row = image_row,
                                         df = df)
-    s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
+
     print('Count based scores for {}'.format(image_row[0]))
-    for k,v in s:
+    sorted_count_dict = dict_sort(score_dict = score_dict)
+
+    for k,v in sorted_count_dict:
         print('{} {}'.format(k,v))
+
+    # Graph based scores
+
     dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
     cycle_list = find_cycles(g = dg)
-    draw_graph(g=dg)
+    graph_score_dict = compute_graph_scores(dg)
+    print('Graph based scores for {}'.format(image_row[0]))
+    sorted_graph_dict = dict_sort(score_dict = graph_score_dict)
+    for k,v in sorted_graph_dict:
+        print('{} {}'.format(k,v))
+    #draw_graph(g=dg)
+
+def dict_sort(score_dict):
+    """
+    Sorting a keys (generated images) in a score dict
+    based on the computed score
+
+    """
+    s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
+    return s
 
 
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    for image_idx in range(1):
+    for image_idx in range(10):
         show_results(df=df,image_row = url_struct[image_idx])
 
 
