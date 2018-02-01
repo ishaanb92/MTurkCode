@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from collections import OrderedDict
 
 def read_results(filename):
     """
@@ -105,18 +105,19 @@ def generate_directed_graph(image_row,df):
 
     return dg
 
-def find_cycles(g):
+def find_cycles(g,verbose=False):
     """
     Returns list of cycles in the directed graph
 
     """
     cycle_list =  list(nx.simple_cycles(g))
-    print('Number of cycles found : {}'.format(len(cycle_list)))
-    for cycle in cycle_list:
-        print('Cycle {}'.format(cycle_list.index(cycle)))
-        for node in cycle:
-            print('{} -->'.format(node),end = '',flush = True)
-        print('{}'.format(cycle[0])) #Print first node of cycle for completeness and easier interpretation
+    if verbose is True:
+        print('Number of cycles found : {}'.format(len(cycle_list)))
+        for cycle in cycle_list:
+            print('Cycle {}'.format(cycle_list.index(cycle)))
+            for node in cycle:
+                print('{} -->'.format(node),end = '',flush = True)
+            print('{}'.format(cycle[0])) #Print first node of cycle for completeness and easier interpretation
 
     return cycle_list
 
@@ -153,7 +154,7 @@ def compute_graph_scores(dg):
     return graph_score_dict
 
 
-def show_results(df,image_row):
+def show_per_image_results(df,image_row,verbose=False):
     """
     Shows the results for images generated from a
     single original image
@@ -161,42 +162,125 @@ def show_results(df,image_row):
     """
 
     # Count-based score
-    score_dict = analyze_original_image(image_row = image_row,
+
+    count_score_dict = analyze_original_image(image_row = image_row,
                                         df = df)
 
-    print('Count based scores for {}'.format(image_row[0]))
-    sorted_count_dict = dict_sort(score_dict = score_dict)
+    sorted_count_dict = dict_sort_values(score_dict = count_score_dict)
 
-    for k,v in sorted_count_dict:
-        print('{} {}'.format(k,v))
+    if verbose is True:
+        print('Count based scores for {}'.format(image_row[0]))
+        for k,v in sorted_count_dict:
+            print('{} {}'.format(k,v))
 
     # Graph based scores
 
     dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
-    cycle_list = find_cycles(g = dg)
+    cycle_list = find_cycles(g = dg,verbose=verbose)
     graph_score_dict = compute_graph_scores(dg)
-    print('Graph based scores for {}'.format(image_row[0]))
-    sorted_graph_dict = dict_sort(score_dict = graph_score_dict)
-    for k,v in sorted_graph_dict:
-        print('{} {}'.format(k,v))
-    print('\n')
+    sorted_graph_dict = dict_sort_values(score_dict = graph_score_dict)
+    if verbose is True:
+        print('Graph based scores for {}'.format(image_row[0]))
+        for k,v in sorted_graph_dict:
+            print('{} {}'.format(k,v))
+        print('\n')
 
-def dict_sort(score_dict):
+    return graph_score_dict,count_score_dict
+
+def dict_sort_values(score_dict):
     """
-    Sorting a keys (generated images) in a score dict
+    Sorting keys (generated images) in a score dict
     based on the computed score
 
     """
     s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
     return s
 
+def dict_sort_keys(score_dict):
+    """
+    Sorting the score dict based on key-names
+    Used to collect scores coming from the same
+    generative model.
+
+    Returns a list of tuples
+
+    """
+    sorted_dict = OrderedDict(sorted(score_dict.items()))
+    sorted_list = [(k,sorted_dict[k]) for k in sorted_dict]
+    return sorted_list
+
+def accumulate_per_image_results(df,url_struct,num_images):
+
+    """
+    Accumulates and separates the scores for different generative
+    model for programmed number of original images
+
+    """
+    gan_score_graph = []
+    gan_score_count = []
+
+    ae_score_graph = []
+    ae_score_count = []
+
+    ce_score_graph = []
+    ce_score_count = []
+
+    noisy_score_graph = []
+    noisy_score_count = []
+
+
+    for image_idx in range(num_images):
+        graph_dict,count_dict = show_per_image_results(df=df,image_row = url_struct[image_idx])
+
+        sorted_graph_list = dict_sort_keys(graph_dict)
+        sorted_count_list = dict_sort_keys(count_dict)
+
+        # Bucketing scores for each model (UGLY FUCKING CODE. CHANGE ASAP)
+        ae_score_graph.append(sorted_graph_list[0][1])
+        ce_score_graph.append(sorted_graph_list[1][1])
+        gan_score_graph.append(sorted_graph_list[2][1])
+        noisy_score_graph.append(sorted_graph_list[3][1])
+
+        ae_score_count.append(sorted_count_list[0][1])
+        ce_score_count.append(sorted_count_list[1][1])
+        gan_score_count.append(sorted_count_list[2][1])
+        noisy_score_count.append(sorted_count_list[3][1])
+
+    gan_score_graph = np.asarray(gan_score_graph)
+
+    ae_score_graph = np.asarray(ae_score_graph)
+
+    ce_score_graph = np.asarray(ce_score_graph)
+
+    noisy_score_graph = np.asarray(noisy_score_graph)
+
+
+    gan_score_count = np.asarray(gan_score_count)
+
+    ae_score_count = np.asarray(ae_score_count)
+
+    ce_score_count = np.asarray(ce_score_count)
+
+    noisy_score_count = np.asarray(noisy_score_count)
+
+    print('GRAPH SCORE STATISTICS')
+    print('AE : Mean {} Variance {}'.format(np.mean(ae_score_graph),np.var(ae_score_graph)))
+    print('GAN : Mean {} Variance {}'.format(np.mean(gan_score_graph),np.var(gan_score_graph)))
+    print('CE : Mean {} Variance {}'.format(np.mean(ce_score_graph),np.var(ce_score_graph)))
+    print('Noisy : Mean {} Variance {}'.format(np.mean(noisy_score_graph),np.var(noisy_score_graph)))
+
+    print('\n')
+    print('COUNT BASED SCORE STATISTICS')
+    print('AE : Mean {} Variance {}'.format(np.mean(ae_score_count),np.var(ae_score_count)))
+    print('GAN : Mean {} Variance {}'.format(np.mean(gan_score_count),np.var(gan_score_count)))
+    print('CE : Mean {} Variance {}'.format(np.mean(ce_score_count),np.var(ce_score_count)))
+    print('Noisy : Mean {} Variance {}'.format(np.mean(noisy_score_count),np.var(noisy_score_count)))
 
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    for image_idx in range(200):
-        show_results(df=df,image_row = url_struct[image_idx])
+    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
 
 
