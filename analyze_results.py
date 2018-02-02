@@ -5,6 +5,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 from scipy.stats import shapiro
+import matplotlib.pyplot as plt
+
 
 def read_results(filename):
     """
@@ -216,7 +218,11 @@ def accumulate_per_image_results(df,url_struct,num_images):
 
     """
     Accumulates and separates the scores for different generative
-    model for programmed number of original images
+    model for programmed number of original images.
+
+    Computes mean and variance of score(s) for all models.
+    Performs normality tests on the score(s) for all models.
+    Creates illustrative graphs
 
     """
     gan_score_graph = []
@@ -294,6 +300,22 @@ def accumulate_per_image_results(df,url_struct,num_images):
     print('CE :: p-value : {}'.format(normality_test(ce_score_count)))
     print('Noisy :: p-value : {}'.format(normality_test(noisy_score_count)))
 
+    #Create plots
+    x_axis = [i for i in range(num_images)]
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_title('Graph Scores for Images v/s Image IDs')
+    ax.scatter(x_axis,ae_score_graph,label='Auto-Encoder Score')
+    ax.scatter(x_axis,ce_score_graph,label='Context-Encoder Score')
+    ax.scatter(x_axis,gan_score_graph,label='GAN Score')
+    ax.scatter(x_axis,noisy_score_graph,label='Noisy Score')
+    ax.set_xlabel('Image ID')
+    ax.set_ylabel('Graph Based Score')
+    ax.set_xticks(x_axis)
+    ax.legend(loc='best')
+    plt.show()
+
+
 
 def normality_test(score_array):
     """
@@ -309,6 +331,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=20)
 
 
