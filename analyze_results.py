@@ -316,6 +316,18 @@ def accumulate_per_image_results(df,url_struct,num_images):
     plt.show()
 
 
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_title('Count Scores for Images v/s Image IDs')
+    ax.scatter(x_axis,ae_score_count,label='Auto-Encoder Score')
+    ax.scatter(x_axis,ce_score_count,label='Context-Encoder Score')
+    ax.scatter(x_axis,gan_score_count,label='GAN Score')
+    ax.scatter(x_axis,noisy_score_count,label='Noisy Score')
+    ax.set_xlabel('Image ID')
+    ax.set_ylabel('Count Based Score')
+    ax.set_xticks(x_axis)
+    ax.legend(loc='best')
+    plt.show()
 
 def normality_test(score_array):
     """
