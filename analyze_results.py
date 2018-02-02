@@ -4,6 +4,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+from scipy.stats import shapiro
 
 def read_results(filename):
     """
@@ -248,13 +249,13 @@ def accumulate_per_image_results(df,url_struct,num_images):
         gan_score_count.append(sorted_count_list[2][1])
         noisy_score_count.append(sorted_count_list[3][1])
 
-    gan_score_graph = np.asarray(gan_score_graph)
+    gan_score_graph = np.asarray(gan_score_graph,dtype=np.float32)
 
-    ae_score_graph = np.asarray(ae_score_graph)
+    ae_score_graph = np.asarray(ae_score_graph,dtype=np.float32)
 
-    ce_score_graph = np.asarray(ce_score_graph)
+    ce_score_graph = np.asarray(ce_score_graph,dtype=np.float32)
 
-    noisy_score_graph = np.asarray(noisy_score_graph)
+    noisy_score_graph = np.asarray(noisy_score_graph,dtype=np.float32)
 
 
     gan_score_count = np.asarray(gan_score_count)
@@ -272,11 +273,38 @@ def accumulate_per_image_results(df,url_struct,num_images):
     print('Noisy : Mean {} Variance {}'.format(np.mean(noisy_score_graph),np.var(noisy_score_graph)))
 
     print('\n')
+
     print('COUNT BASED SCORE STATISTICS')
     print('AE : Mean {} Variance {}'.format(np.mean(ae_score_count),np.var(ae_score_count)))
     print('GAN : Mean {} Variance {}'.format(np.mean(gan_score_count),np.var(gan_score_count)))
     print('CE : Mean {} Variance {}'.format(np.mean(ce_score_count),np.var(ce_score_count)))
     print('Noisy : Mean {} Variance {}'.format(np.mean(noisy_score_count),np.var(noisy_score_count)))
+
+    print('\n')
+    print('NORMALITY TESTS - GRAPHS')
+    print('GAN :: p-value : {}'.format(normality_test(gan_score_graph)))
+    print('AE :: p-value : {}'.format(normality_test(ae_score_graph)))
+    print('CE :: p-value : {}'.format(normality_test(ce_score_graph)))
+    print('Noisy :: p-value : {}'.format(normality_test(noisy_score_graph)))
+
+    print('\n')
+    print('NORMALITY TESTS - COUNTS')
+    print('GAN :: p-value : {}'.format(normality_test(gan_score_count)))
+    print('AE :: p-value : {}'.format(normality_test(ae_score_count)))
+    print('CE :: p-value : {}'.format(normality_test(ce_score_count)))
+    print('Noisy :: p-value : {}'.format(normality_test(noisy_score_count)))
+
+
+def normality_test(score_array):
+    """
+    Given a score array for a generative model,
+    performs a statistical test of normality (Shapiro-Wilk).
+
+    Returns p-value produced from the test
+
+    """
+    _,p_value = shapiro(x=score_array)
+    return p_value
 
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
