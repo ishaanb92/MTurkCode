@@ -263,6 +263,11 @@ def accumulate_per_image_results(df,url_struct,num_images):
 
     noisy_score_graph = np.asarray(noisy_score_graph,dtype=np.float32)
 
+    # Generate CIs for means
+    lower_gan_score_graph,upper_gan_score_graph = generate_confidence_mean(X=gan_score_graph,n_bootstrap = 1000)
+    lower_ae_score_graph,upper_ae_score_graph = generate_confidence_mean(X=ae_score_graph,n_bootstrap = 1000)
+    lower_ce_score_graph,upper_ce_score_graph = generate_confidence_mean(X=ce_score_graph,n_bootstrap = 1000)
+    lower_noisy_score_graph,upper_noisy_score_graph = generate_confidence_mean(X=noisy_score_graph,n_bootstrap = 1000)
 
     gan_score_count = np.asarray(gan_score_count)
 
@@ -272,19 +277,24 @@ def accumulate_per_image_results(df,url_struct,num_images):
 
     noisy_score_count = np.asarray(noisy_score_count)
 
+    lower_gan_score_count,upper_gan_score_count = generate_confidence_mean(X=gan_score_count,n_bootstrap = 1000)
+    lower_ae_score_count,upper_ae_score_count = generate_confidence_mean(X=ae_score_count,n_bootstrap = 1000)
+    lower_ce_score_count,upper_ce_score_count = generate_confidence_mean(X=ce_score_count,n_bootstrap = 1000)
+    lower_noisy_score_count,upper_noisy_score_count = generate_confidence_mean(X=noisy_score_count,n_bootstrap = 1000)
+
     print('GRAPH SCORE STATISTICS')
-    print('AE : Mean {} Variance {}'.format(np.mean(ae_score_graph),np.var(ae_score_graph)))
-    print('GAN : Mean {} Variance {}'.format(np.mean(gan_score_graph),np.var(gan_score_graph)))
-    print('CE : Mean {} Variance {}'.format(np.mean(ce_score_graph),np.var(ce_score_graph)))
-    print('Noisy : Mean {} Variance {}'.format(np.mean(noisy_score_graph),np.var(noisy_score_graph)))
+    print('AE : Mean {} Variance {} 95% CI (Mean) : [ {} {} ]'.format(np.mean(ae_score_graph),np.var(ae_score_graph),lower_ae_score_graph,upper_ae_score_graph))
+    print('GAN : Mean {} Variance {} 95% CI (Mean) : [ {} {} ]'.format(np.mean(gan_score_graph),np.var(gan_score_graph),lower_gan_score_graph,upper_gan_score_graph))
+    print('CE : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(ce_score_graph),np.var(ce_score_graph),lower_ce_score_graph,upper_ce_score_graph))
+    print('Noisy : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(noisy_score_graph),np.var(noisy_score_graph),lower_noisy_score_graph,upper_noisy_score_graph))
 
     print('\n')
 
     print('COUNT BASED SCORE STATISTICS')
-    print('AE : Mean {} Variance {}'.format(np.mean(ae_score_count),np.var(ae_score_count)))
-    print('GAN : Mean {} Variance {}'.format(np.mean(gan_score_count),np.var(gan_score_count)))
-    print('CE : Mean {} Variance {}'.format(np.mean(ce_score_count),np.var(ce_score_count)))
-    print('Noisy : Mean {} Variance {}'.format(np.mean(noisy_score_count),np.var(noisy_score_count)))
+    print('AE : Mean {} Variance {} 95% CI (Mean) : [ {} {} ]'.format(np.mean(ae_score_count),np.var(ae_score_count),lower_ae_score_count,upper_ae_score_count))
+    print('GAN : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(gan_score_count),np.var(gan_score_count),lower_gan_score_count,upper_gan_score_count))
+    print('CE : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(ce_score_count),np.var(ce_score_count),lower_ce_score_count,upper_ce_score_count))
+    print('Noisy : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(noisy_score_count),np.var(noisy_score_count),lower_noisy_score_count,upper_noisy_score_count))
 
     print('\n')
     print('NORMALITY TESTS - GRAPHS')
@@ -301,33 +311,144 @@ def accumulate_per_image_results(df,url_struct,num_images):
     print('Noisy :: p-value : {}'.format(normality_test(noisy_score_count)))
 
     #Create plots
-    x_axis = [i for i in range(num_images)]
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_title('Graph Scores for Images v/s Image IDs')
-    ax.scatter(x_axis,ae_score_graph,label='Auto-Encoder Score')
-    ax.scatter(x_axis,ce_score_graph,label='Context-Encoder Score')
-    ax.scatter(x_axis,gan_score_graph,label='GAN Score')
-    ax.scatter(x_axis,noisy_score_graph,label='Noisy Score')
-    ax.set_xlabel('Image ID')
-    ax.set_ylabel('Graph Based Score')
-    ax.set_xticks(x_axis)
-    ax.legend(loc='best')
-    plt.show()
+#    x_axis = [i for i in range(num_images)]
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    ax.set_title('Graph Scores for Images v/s Image IDs')
+#    ax.scatter(x_axis,ae_score_graph,label='Auto-Encoder Score')
+#    ax.scatter(x_axis,ce_score_graph,label='Context-Encoder Score')
+#    ax.scatter(x_axis,gan_score_graph,label='GAN Score')
+#    ax.scatter(x_axis,noisy_score_graph,label='Noisy Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Graph Based Score')
+#    ax.set_xticks(x_axis)
+#    ax.legend(loc='best')
+#    plt.show()
+#
+#
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    ax.set_title('Count Scores for Images v/s Image IDs')
+#    ax.scatter(x_axis,ae_score_count,label='Auto-Encoder Score')
+#    ax.scatter(x_axis,ce_score_count,label='Context-Encoder Score')
+#    ax.scatter(x_axis,gan_score_count,label='GAN Score')
+#    ax.scatter(x_axis,noisy_score_count,label='Noisy Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Count Based Score')
+#    ax.set_xticks(x_axis)
+#    ax.legend(loc='best')
+#    plt.show()
+#
+#    #Individual Scores (Graph Score)
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    ax.set_title('Graph Scores for GAN Images v/s Image IDs')
+#    ax.scatter(x_axis,gan_score_graph,label='Auto-Encoder Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Graph Based Score')
+#    ax.set_xticks(x_axis)
+#    ax.legend(loc='best')
+#    plt.show()
+#
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    ax.set_title('Graph Scores for AE Images v/s Image IDs')
+#    ax.scatter(x_axis,ae_score_graph,label='Auto-Encoder Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Graph Based Score')
+#    ax.set_xticks(x_axis)
+#    ax.legend(loc='best')
+#    plt.show()
+#
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    ax.set_title('Graph Scores for CE Images v/s Image IDs')
+#    ax.scatter(x_axis,ce_score_graph,label='Auto-Encoder Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Graph Based Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Graph Based Score')
+#    ax.set_xticks(x_axis)
+#    ax.legend(loc='best')
+#    plt.show()
+#
+#
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    ax.set_title('Graph Scores for Noisy Images v/s Image IDs')
+#    ax.scatter(x_axis,noisy_score_graph,label='Auto-Encoder Score')
+#    ax.set_xlabel('Image ID')
+#    ax.set_ylabel('Graph Based Score')
+#    ax.set_xticks(x_axis)
+#    ax.legend(loc='best')
+#    plt.show()
+
+ #   # Histograms
+ #   plt.hist(ae_score_count,bins=50)
+ #   plt.xlabel('Scores')
+ #   plt.ylabel('Frequencies')
+ #   plt.title('Histogram for Auto-Encoder Count Based scores')
+ #   plt.show()
+
+ #   plt.hist(gan_score_count,bins=50)
+ #   plt.xlabel('Scores')
+ #   plt.ylabel('Frequencies')
+ #   plt.title('Histogram for GAN Count Based scores')
+ #   plt.show()
+
+ #   plt.hist(ce_score_count,bins=50)
+ #   plt.xlabel('Scores')
+ #   plt.ylabel('Frequencies')
+ #   plt.title('Histogram for Context-Encoder Count Based scores')
+ #   plt.show()
+
+ #   plt.hist(noisy_score_count,bins=50)
+ #   plt.xlabel('Scores')
+ #   plt.ylabel('Frequencies')
+ #   plt.title('Histogram for Noisy Count Based scores')
+ #   plt.show()
 
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_title('Count Scores for Images v/s Image IDs')
-    ax.scatter(x_axis,ae_score_count,label='Auto-Encoder Score')
-    ax.scatter(x_axis,ce_score_count,label='Context-Encoder Score')
-    ax.scatter(x_axis,gan_score_count,label='GAN Score')
-    ax.scatter(x_axis,noisy_score_count,label='Noisy Score')
-    ax.set_xlabel('Image ID')
-    ax.set_ylabel('Count Based Score')
-    ax.set_xticks(x_axis)
-    ax.legend(loc='best')
-    plt.show()
+
+
+
+def bootstrap_resample(X, n=None):
+    """ Bootstrap resample an array_like
+    Parameters
+    ----------
+    X : array_like
+      data to resample
+    n : int, optional
+      length of resampled array, equal to len(X) if n==None
+    Results
+    -------
+    returns X_resamples
+    Code source : https://gist.github.com/aflaxman/6871948
+    """
+    if isinstance(X, pd.Series):
+        X = X.copy()
+        X.index = range(len(X.index))
+    if n == None:
+        n = len(X)
+
+    resample_i = np.floor(np.random.rand(n)*len(X)).astype(int)
+    X_resample = np.array(X[resample_i])  # TODO: write a test demonstrating why array() is important
+    return X_resample
+
+def generate_confidence_mean(X,n_bootstrap):
+    sample_mean = np.mean(X)
+    mean_diffs = []
+    for step in range(n_bootstrap):
+        b_sample = bootstrap_resample(X=X)
+        mean_diffs.append(np.mean(b_sample) - sample_mean)
+    perc_step = 100/n_bootstrap
+    u_index = np.floor(97.5/perc_step).astype(int)
+    l_index = np.floor(2.5/perc_step).astype(int)
+    mean_diffs.sort()
+    mean_diffs = np.asarray(mean_diffs,dtype=np.float32)
+    return sample_mean-mean_diffs[u_index],sample_mean-mean_diffs[l_index]
+
+
 
 def normality_test(score_array):
     """
@@ -343,6 +464,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=20)
+    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
 
 
