@@ -309,6 +309,24 @@ def accumulate_per_image_results(df,url_struct,num_images):
     print('AE :: p-value : {}'.format(normality_test(ae_score_count)))
     print('CE :: p-value : {}'.format(normality_test(ce_score_count)))
     print('Noisy :: p-value : {}'.format(normality_test(noisy_score_count)))
+    x_labels = ['GAN','AE','CE','Noisy']
+    merged_graph =  np.vstack((gan_score_graph,ae_score_graph,ce_score_graph,noisy_score_graph))
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_title('Box plot for graph based scores')
+    ax.set_ylabel('Scores')
+    plt.boxplot(merged_graph.T,bootstrap=1000)
+    ax.set_xticklabels(x_labels)
+    plt.show()
+
+    merged_count =  np.vstack((gan_score_count,ae_score_count,ce_score_count,noisy_score_count))
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_title('Box plot for count based scores')
+    ax.set_ylabel('Scores')
+    plt.boxplot(merged_count.T,bootstrap=1000)
+    ax.set_xticklabels(x_labels)
+    plt.show()
 
     #Create plots
 #    x_axis = [i for i in range(num_images)]
