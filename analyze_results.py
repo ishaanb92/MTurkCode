@@ -157,6 +157,7 @@ def compute_graph_scores(dg):
     return graph_score_dict
 
 
+
 def show_per_image_results(df,image_row,verbose=False):
     """
     Shows the results for images generated from a
@@ -191,6 +192,30 @@ def show_per_image_results(df,image_row,verbose=False):
         print('\n')
 
     return graph_score_dict,count_score_dict
+
+def create_output_csv(df,url_struct,num_images=200):
+    """
+    Creates output CSV file for original image-generated image pair
+    with both types of scores
+
+    """
+    result_table = []
+    for image_idx in range(num_images):
+        image_row = url_struct[image_idx]
+        graph_score_dict,count_score_dict = show_per_image_results(df=df,image_row=image_row)
+        graph_scores_sorted = dict_sort_keys(graph_score_dict)
+        count_scores_sorted = dict_sort_keys(count_score_dict)
+        for pair_g,pair_c in zip(graph_scores_sorted,count_scores_sorted):
+            result_row = []
+            result_row.append(image_row[0])
+            result_row.append(pair_g[0]) # Or pair_c[0] doesn't matter
+            result_row.append(pair_g[1]) # Graph-based score
+            result_row.append(pair_c[1]) # Count-based score
+            result_table.append(result_row)
+    result_table = np.asarray(result_table)
+    df_scores = pd.DataFrame(data=result_table,columns = ['Original Image','Generated Image','Graph Based Score','Count Based Score'])
+    df_scores.to_csv('scores.csv')
+
 
 def dict_sort_values(score_dict):
     """
@@ -309,6 +334,7 @@ def accumulate_per_image_results(df,url_struct,num_images):
     print('AE :: p-value : {}'.format(normality_test(ae_score_count)))
     print('CE :: p-value : {}'.format(normality_test(ce_score_count)))
     print('Noisy :: p-value : {}'.format(normality_test(noisy_score_count)))
+
     x_labels = ['GAN','AE','CE','Noisy']
     merged_graph =  np.vstack((gan_score_graph,ae_score_graph,ce_score_graph,noisy_score_graph))
     fig = plt.figure()
@@ -482,6 +508,5 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
-
-
+    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    create_output_csv(df=df,url_struct=url_struct)
