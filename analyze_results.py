@@ -60,7 +60,7 @@ def analyze_original_image(image_row,df):
         score_dict[key] = (imageFrame[imageFrame['Answer'] == key].shape[0])/num_times_shown
     return score_dict
 
-def analyze_pairwise(image_row,df):
+def analyze_pairwise(image_row,df,verbose=False):
     """
     Does pairwise analysis instead of overall count
     Generates a dict that can used to be create a graph
@@ -74,15 +74,19 @@ def analyze_pairwise(image_row,df):
     for keys in pair_dict:
         pairFrame = imageFrame[(imageFrame['Generated Image 1'] == keys[0]) & (imageFrame['Generated Image 2'] == keys[1])]
         num_compares = pairFrame.shape[0]
+        if verbose is True:
+            print('Pair : {} Compares : {}'.format(keys,num_compares))
         # Compare which image has been the "Answer" more times in the pair
-        if pairFrame[pairFrame['Answer'] == keys[0]].shape[0] > pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
+        if pairFrame[pairFrame['Answer'] == keys[0]].shape[0] >= pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
             num_wins = pairFrame[pairFrame['Answer'] == keys[0]].shape[0]
+            if verbose is True:
+                print('{} wins : {}'.format(keys[0],num_wins))
             pair_dict[tuple(keys)] = [keys[0],num_wins/num_compares]
-        elif pairFrame[pairFrame['Answer'] == keys[0]].shape[0] <  pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
+        else:
             num_wins = pairFrame[pairFrame['Answer'] == keys[1]].shape[0]
             pair_dict[tuple(keys)] = [keys[1],num_wins/num_compares]
-        else:
-            pair_dict[tuple(keys)] = ["Equal or Unsure",0]
+            if verbose is True:
+                print('{} wins : {}'.format(keys[1],num_wins))
 
 
     return pair_dict
@@ -94,7 +98,7 @@ def generate_directed_graph(image_row,df):
 
     """
     dg = nx.DiGraph()
-    pairwise_dict = analyze_pairwise(image_row = image_row,df = df)
+    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=False)
     image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
     dg.add_nodes_from(image_list)
     for pairs in pairwise_dict:
@@ -209,7 +213,7 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
     dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
-    cycle_list = find_cycles(g = dg,verbose=True)
+    cycle_list = find_cycles(g = dg)
     graph_score_dict = compute_graph_scores(dg)
     sorted_graph_dict = dict_sort_values(score_dict = graph_score_dict)
     if verbose is True:
@@ -217,8 +221,8 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
         for k,v in sorted_graph_dict:
             print('{} {}'.format(k,v))
         print('\n')
-
-    draw_graph(g=dg,image_idx = image_idx)
+    if verbose is True:
+        draw_graph(g=dg,image_idx = image_idx)
 
     return graph_score_dict,count_score_dict
 
@@ -525,4 +529,4 @@ if __name__ == '__main__':
     url_struct = read_url_struct('url_struct.pkl')
     #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
     #create_output_csv(df=df,url_struct=url_struct)
-    show_per_image_results(df=df,url_struct=url_struct,image_idx=32)
+    show_per_image_results(df=df,url_struct=url_struct,image_idx=0,verbose=True)
