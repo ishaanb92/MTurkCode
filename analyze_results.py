@@ -213,7 +213,7 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
     dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
-    cycle_list = find_cycles(g = dg)
+    cycle_list = find_cycles(g = dg,verbose=verbose)
     graph_score_dict = compute_graph_scores(dg)
     sorted_graph_dict = dict_sort_values(score_dict = graph_score_dict)
     if verbose is True:
@@ -373,6 +373,29 @@ def accumulate_per_image_results(df,url_struct,num_images):
     ax.set_xticklabels(x_labels)
     plt.show()
 
+    plt.hist(ae_score_graph,bins=50)
+    plt.xlabel('Scores')
+    plt.ylabel('Frequencies')
+    plt.title('Histogram for Auto-Encoder Scores')
+    plt.show()
+
+    plt.hist(gan_score_graph,bins=50)
+    plt.xlabel('Scores')
+    plt.ylabel('Frequencies')
+    plt.title('Histogram for GAN Scores')
+    plt.show()
+
+    plt.hist(ce_score_graph,bins=50)
+    plt.xlabel('Scores')
+    plt.ylabel('Frequencies')
+    plt.title('Histogram for Context-Encoder Scores')
+    plt.show()
+
+    plt.hist(noisy_score_graph,bins=50)
+    plt.xlabel('Scores')
+    plt.ylabel('Frequencies')
+    plt.title('Histogram for Noisy Image Scores')
+    plt.show()
     #Create plots
 #    x_axis = [i for i in range(num_images)]
 #    fig = plt.figure()
@@ -447,29 +470,6 @@ def accumulate_per_image_results(df,url_struct,num_images):
 #    plt.show()
 
  #   # Histograms
- #   plt.hist(ae_score_count,bins=50)
- #   plt.xlabel('Scores')
- #   plt.ylabel('Frequencies')
- #   plt.title('Histogram for Auto-Encoder Count Based scores')
- #   plt.show()
-
- #   plt.hist(gan_score_count,bins=50)
- #   plt.xlabel('Scores')
- #   plt.ylabel('Frequencies')
- #   plt.title('Histogram for GAN Count Based scores')
- #   plt.show()
-
- #   plt.hist(ce_score_count,bins=50)
- #   plt.xlabel('Scores')
- #   plt.ylabel('Frequencies')
- #   plt.title('Histogram for Context-Encoder Count Based scores')
- #   plt.show()
-
- #   plt.hist(noisy_score_count,bins=50)
- #   plt.xlabel('Scores')
- #   plt.ylabel('Frequencies')
- #   plt.title('Histogram for Noisy Count Based scores')
- #   plt.show()
 
 
 
@@ -527,6 +527,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
-    #create_output_csv(df=df,url_struct=url_struct)
-    show_per_image_results(df=df,url_struct=url_struct,image_idx=0,verbose=True)
+    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    create_output_csv(df=df,url_struct=url_struct)
+    #show_per_image_results(df=df,url_struct=url_struct,image_idx=48,verbose=True)
