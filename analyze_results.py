@@ -133,6 +133,7 @@ def draw_graph(g,image_idx):
     DEBUG-ONLY feature
 
     """
+    image_name = 'https://s3-us-west-1.amazonaws.com/facesdb/mutrk_db_fixed/' + str(image_idx) + '/original.jpg'
     node_map = relabel_nodes(g=g,image_idx=image_idx)
     nx.draw_networkx(g,pos=nx.spectral_layout(g),font_size=15,labels=node_map)
     labels = nx.get_edge_attributes(g,'weight')
@@ -143,6 +144,8 @@ def draw_graph(g,image_idx):
                                   arrowsize = 10
                                 )
     plt.xlim((-2,2))
+    title = "Graph for images generated from : {}".format(image_name)
+    plt.title(title)
     plt.show()
 
 
