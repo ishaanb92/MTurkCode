@@ -127,13 +127,14 @@ def find_cycles(g,verbose=False):
     return cycle_list
 
 
-def draw_graph(g):
+def draw_graph(g,image_idx):
     """
     Generates visualization for the pairwise graph
     DEBUG-ONLY feature
 
     """
-    nx.draw_networkx(g,pos=nx.spectral_layout(g),font_size=10)
+    node_map = relabel_nodes(g=g,image_idx=image_idx)
+    nx.draw_networkx(g,pos=nx.spectral_layout(g),font_size=15,labels=node_map)
     labels = nx.get_edge_attributes(g,'weight')
     nx.draw_networkx_edge_labels( g,
                                   pos = nx.spectral_layout(g),
@@ -143,6 +144,21 @@ def draw_graph(g):
                                 )
     plt.xlim((-2,2))
     plt.show()
+
+
+def relabel_nodes(g,image_idx):
+    """
+    Utility function to shorten URLs
+    for better viz and interpretation of graphs
+    """
+
+    relabel_dict = {}
+
+    for node in g.nodes(data=False):
+        split = node.split('/')
+        relabel_dict[node] = split[-1]
+
+    return relabel_dict
 
 def compute_graph_scores(dg):
     """
@@ -165,7 +181,7 @@ def compute_graph_scores(dg):
 
 
 
-def show_per_image_results(df,image_row,verbose=False):
+def show_per_image_results(df,url_struct,image_idx,verbose=False):
     """
     Shows the results for images generated from a
     single original image
@@ -173,6 +189,7 @@ def show_per_image_results(df,image_row,verbose=False):
     """
 
     # Count-based score
+    image_row = url_struct[image_idx]
 
     count_score_dict = analyze_original_image(image_row = image_row,
                                         df = df)
@@ -198,7 +215,7 @@ def show_per_image_results(df,image_row,verbose=False):
             print('{} {}'.format(k,v))
         print('\n')
 
-    #draw_graph(dg)
+    draw_graph(g=dg,image_idx = image_idx)
 
     return graph_score_dict,count_score_dict
 
@@ -211,7 +228,7 @@ def create_output_csv(df,url_struct,num_images=200):
     result_table = []
     for image_idx in range(num_images):
         image_row = url_struct[image_idx]
-        graph_score_dict,count_score_dict = show_per_image_results(df=df,image_row=image_row)
+        graph_score_dict,count_score_dict = show_per_image_results(df=df,url_struct = url_struct,image_idx=image_idx)
         graph_scores_sorted = dict_sort_keys(graph_score_dict)
         count_scores_sorted = dict_sort_keys(count_score_dict)
         for pair_g,pair_c in zip(graph_scores_sorted,count_scores_sorted):
@@ -273,7 +290,7 @@ def accumulate_per_image_results(df,url_struct,num_images):
 
 
     for image_idx in range(num_images):
-        graph_dict,count_dict = show_per_image_results(df=df,image_row = url_struct[image_idx],verbose=True)
+        graph_dict,count_dict = show_per_image_results(df=df,url_struct = url_struct,image_idx=image_idx)
 
         sorted_graph_list = dict_sort_keys(graph_dict)
         sorted_count_list = dict_sort_keys(count_dict)
@@ -503,5 +520,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
     #create_output_csv(df=df,url_struct=url_struct)
+    show_per_image_results(df=df,url_struct=url_struct,image_idx=32)
