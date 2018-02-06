@@ -139,7 +139,7 @@ if __name__ == '__main__':
                         aws_access_key_id = access_key,
                         aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
-                        #endpoint_url = MTURK_SANDBOX
+                        endpoint_url = MTURK_SANDBOX
                         )
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     url_struct = get_url_struct('url_struct.pkl')
 
-    num_blocks = 4
+    num_blocks = 1
     images_per_hit = 50
     image_row_length = len(url_struct[0])
 

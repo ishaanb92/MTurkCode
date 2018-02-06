@@ -115,7 +115,9 @@ def find_cycles(g,verbose=False):
     """
     cycle_list =  list(nx.simple_cycles(g))
     if verbose is True:
-        print('Number of cycles found : {}'.format(len(cycle_list)))
+        #print('Number of cycles found : {}'.format(len(cycle_list)))
+        if len(cycle_list) != 0:
+            print('Cycle found')
         for cycle in cycle_list:
             print('Cycle {}'.format(cycle_list.index(cycle)))
             for node in cycle:
@@ -131,10 +133,15 @@ def draw_graph(g):
     DEBUG-ONLY feature
 
     """
-    nx.draw_networkx(g,pos=nx.circular_layout(g))
+    nx.draw_networkx(g,pos=nx.spectral_layout(g),font_size=10)
     labels = nx.get_edge_attributes(g,'weight')
-    nx.draw_networkx_edge_labels(g,pos = nx.circular_layout(g),labels = labels)
-    plt.xlim((-1,3))
+    nx.draw_networkx_edge_labels( g,
+                                  pos = nx.spectral_layout(g),
+                                  labels = labels,
+                                  arrowstyle = '->',
+                                  arrowsize = 10
+                                )
+    plt.xlim((-2,2))
     plt.show()
 
 def compute_graph_scores(dg):
@@ -182,7 +189,7 @@ def show_per_image_results(df,image_row,verbose=False):
     dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
-    cycle_list = find_cycles(g = dg,verbose=verbose)
+    cycle_list = find_cycles(g = dg,verbose=True)
     graph_score_dict = compute_graph_scores(dg)
     sorted_graph_dict = dict_sort_values(score_dict = graph_score_dict)
     if verbose is True:
@@ -190,6 +197,8 @@ def show_per_image_results(df,image_row,verbose=False):
         for k,v in sorted_graph_dict:
             print('{} {}'.format(k,v))
         print('\n')
+
+    #draw_graph(dg)
 
     return graph_score_dict,count_score_dict
 
@@ -264,7 +273,7 @@ def accumulate_per_image_results(df,url_struct,num_images):
 
 
     for image_idx in range(num_images):
-        graph_dict,count_dict = show_per_image_results(df=df,image_row = url_struct[image_idx])
+        graph_dict,count_dict = show_per_image_results(df=df,image_row = url_struct[image_idx],verbose=True)
 
         sorted_graph_list = dict_sort_keys(graph_dict)
         sorted_count_list = dict_sort_keys(count_dict)
@@ -320,20 +329,6 @@ def accumulate_per_image_results(df,url_struct,num_images):
     print('GAN : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(gan_score_count),np.var(gan_score_count),lower_gan_score_count,upper_gan_score_count))
     print('CE : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(ce_score_count),np.var(ce_score_count),lower_ce_score_count,upper_ce_score_count))
     print('Noisy : Mean {} Variance {} 95% CI (Mean): [ {} {} ]'.format(np.mean(noisy_score_count),np.var(noisy_score_count),lower_noisy_score_count,upper_noisy_score_count))
-
-    print('\n')
-    print('NORMALITY TESTS - GRAPHS')
-    print('GAN :: p-value : {}'.format(normality_test(gan_score_graph)))
-    print('AE :: p-value : {}'.format(normality_test(ae_score_graph)))
-    print('CE :: p-value : {}'.format(normality_test(ce_score_graph)))
-    print('Noisy :: p-value : {}'.format(normality_test(noisy_score_graph)))
-
-    print('\n')
-    print('NORMALITY TESTS - COUNTS')
-    print('GAN :: p-value : {}'.format(normality_test(gan_score_count)))
-    print('AE :: p-value : {}'.format(normality_test(ae_score_count)))
-    print('CE :: p-value : {}'.format(normality_test(ce_score_count)))
-    print('Noisy :: p-value : {}'.format(normality_test(noisy_score_count)))
 
     x_labels = ['GAN','AE','CE','Noisy']
     merged_graph =  np.vstack((gan_score_graph,ae_score_graph,ce_score_graph,noisy_score_graph))
@@ -508,5 +503,5 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
-    create_output_csv(df=df,url_struct=url_struct)
+    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    #create_output_csv(df=df,url_struct=url_struct)
