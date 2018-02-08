@@ -79,12 +79,14 @@ def analyze_pairwise(image_row,df,verbose=False):
         # Compare which image has been the "Answer" more times in the pair
         if pairFrame[pairFrame['Answer'] == keys[0]].shape[0] >= pairFrame[pairFrame['Answer'] == keys[1]].shape[0]:
             num_wins = pairFrame[pairFrame['Answer'] == keys[0]].shape[0]
+            num_losses = num_compares-num_wins
             if verbose is True:
                 print('{} wins : {}'.format(keys[0],num_wins))
-            pair_dict[tuple(keys)] = [keys[0],num_wins/num_compares]
+            pair_dict[tuple(keys)] = [keys[0],(num_wins-num_losses)/num_compares]
         else:
             num_wins = pairFrame[pairFrame['Answer'] == keys[1]].shape[0]
-            pair_dict[tuple(keys)] = [keys[1],num_wins/num_compares]
+            num_losses = num_compares-num_wins
+            pair_dict[tuple(keys)] = [keys[1],(num_wins-num_losses)/num_compares]
             if verbose is True:
                 print('{} wins : {}'.format(keys[1],num_wins))
 
@@ -98,7 +100,7 @@ def generate_directed_graph(image_row,df):
 
     """
     dg = nx.DiGraph()
-    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=False)
+    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=True)
     image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
     dg.add_nodes_from(image_list)
     for pairs in pairwise_dict:
@@ -469,7 +471,6 @@ def accumulate_per_image_results(df,url_struct,num_images):
 #    ax.legend(loc='best')
 #    plt.show()
 
- #   # Histograms
 
 
 
@@ -499,6 +500,11 @@ def bootstrap_resample(X, n=None):
     return X_resample
 
 def generate_confidence_mean(X,n_bootstrap):
+    """
+    Estimate a 95% confidence interval for the mean score
+    using statistical bootstrapping
+
+    """
     sample_mean = np.mean(X)
     mean_diffs = []
     for step in range(n_bootstrap):
@@ -527,6 +533,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
-    create_output_csv(df=df,url_struct=url_struct)
-    #show_per_image_results(df=df,url_struct=url_struct,image_idx=48,verbose=True)
+    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    #create_output_csv(df=df,url_struct=url_struct)
+    show_per_image_results(df=df,url_struct=url_struct,image_idx=0,verbose=True)
