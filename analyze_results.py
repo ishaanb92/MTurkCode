@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 from scipy.stats import shapiro
 import matplotlib.pyplot as plt
-
+import os
 
 def read_results(filename):
     """
@@ -72,7 +72,7 @@ def analyze_pairwise(image_row,df,verbose=False):
         pair_dict[tuple(image_row[idx])] = None # Lists are mutable, hence can't be used as keys for dicts
 
     for keys in pair_dict:
-        pairFrame = imageFrame[(imageFrame['Generated Image 1'] == keys[0]) & (imageFrame['Generated Image 2'] == keys[1])]
+        pairFrame = imageFrame[((imageFrame['Generated Image 1'] == keys[0]) & (imageFrame['Generated Image 2'] == keys[1]))]
         num_compares = pairFrame.shape[0]
         if verbose is True:
             print('Pair : {} Compares : {}'.format(keys,num_compares))
@@ -82,11 +82,11 @@ def analyze_pairwise(image_row,df,verbose=False):
             num_losses = num_compares-num_wins
             if verbose is True:
                 print('{} wins : {}'.format(keys[0],num_wins))
-            pair_dict[tuple(keys)] = [keys[0],(num_wins-num_losses)/num_compares]
+            pair_dict[tuple(keys)] = [keys[0],round((num_wins-num_losses)/num_compares,2)]
         else:
             num_wins = pairFrame[pairFrame['Answer'] == keys[1]].shape[0]
             num_losses = num_compares-num_wins
-            pair_dict[tuple(keys)] = [keys[1],(num_wins-num_losses)/num_compares]
+            pair_dict[tuple(keys)] = [keys[1],round((num_wins-num_losses)/num_compares,2)]
             if verbose is True:
                 print('{} wins : {}'.format(keys[1],num_wins))
 
@@ -100,7 +100,7 @@ def generate_directed_graph(image_row,df):
 
     """
     dg = nx.DiGraph()
-    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=True)
+    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=False)
     image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
     dg.add_nodes_from(image_list)
     for pairs in pairwise_dict:
@@ -140,19 +140,31 @@ def draw_graph(g,image_idx):
 
     """
     image_name = 'https://s3-us-west-1.amazonaws.com/facesdb/mutrk_db_fixed/' + str(image_idx) + '/original.jpg'
+    dir_name = 'graphs'
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+
     node_map = relabel_nodes(g=g,image_idx=image_idx)
-    nx.draw_networkx(g,pos=nx.spectral_layout(g),font_size=15,labels=node_map)
+    nx.draw_networkx(g,pos=nx.circular_layout(g),font_size=10,labels=node_map)
     labels = nx.get_edge_attributes(g,'weight')
     nx.draw_networkx_edge_labels( g,
-                                  pos = nx.spectral_layout(g),
+                                  pos = nx.circular_layout(g),
                                   labels = labels,
                                   arrowstyle = '->',
-                                  arrowsize = 10
+                                  arrowsize = 10,
+                                  font_size=8
                                 )
     plt.xlim((-2,2))
     title = "Graph for images generated from : {}".format(image_name)
     plt.title(title)
-    plt.show()
+    manager = plt.get_current_fig_manager()
+    manager.resize(*manager.window.maxsize())
+
+    filename =  'graph_{}'.format(image_idx)+'.png'
+    filepath = os.path.join(dir_name,filename)
+    #plt.show()
+    plt.savefig(filepath,bbox_inches='tight')
+    plt.close()
 
 
 def relabel_nodes(g,image_idx):
@@ -215,7 +227,7 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
     dg = generate_directed_graph(image_row = image_row,
                                  df = df)
 
-    cycle_list = find_cycles(g = dg,verbose=verbose)
+    cycle_list = find_cycles(g = dg,verbose=True)
     graph_score_dict = compute_graph_scores(dg)
     sorted_graph_dict = dict_sort_values(score_dict = graph_score_dict)
     if verbose is True:
@@ -223,7 +235,7 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
         for k,v in sorted_graph_dict:
             print('{} {}'.format(k,v))
         print('\n')
-    if verbose is True:
+    if len(cycle_list) != 0:
         draw_graph(g=dg,image_idx = image_idx)
 
     return graph_score_dict,count_score_dict
@@ -533,6 +545,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
     #create_output_csv(df=df,url_struct=url_struct)
-    show_per_image_results(df=df,url_struct=url_struct,image_idx=0,verbose=True)
+    #show_per_image_results(df=df,url_struct=url_struct,image_idx=32,verbose=True)
