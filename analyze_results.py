@@ -7,6 +7,7 @@ from collections import OrderedDict
 from scipy.stats import shapiro
 import matplotlib.pyplot as plt
 import os
+import pickle
 
 def read_results(filename):
     """
@@ -237,8 +238,9 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
         print('\n')
     if len(cycle_list) != 0:
         draw_graph(g=dg,image_idx = image_idx)
+        return graph_score_dict,count_score_dict,image_idx
 
-    return graph_score_dict,count_score_dict
+    return graph_score_dict,count_score_dict,None
 
 def create_output_csv(df,url_struct,num_images=200):
     """
@@ -309,9 +311,13 @@ def accumulate_per_image_results(df,url_struct,num_images):
     noisy_score_graph = []
     noisy_score_count = []
 
+    cycle_idxs = []
+
 
     for image_idx in range(num_images):
-        graph_dict,count_dict = show_per_image_results(df=df,url_struct = url_struct,image_idx=image_idx)
+        graph_dict,count_dict,idx = show_per_image_results(df=df,url_struct = url_struct,image_idx=image_idx)
+        if idx is not None:
+            cycle_idxs.append(idx)
 
         sorted_graph_list = dict_sort_keys(graph_dict)
         sorted_count_list = dict_sort_keys(count_dict)
@@ -326,6 +332,10 @@ def accumulate_per_image_results(df,url_struct,num_images):
         ce_score_count.append(sorted_count_list[1][1])
         gan_score_count.append(sorted_count_list[2][1])
         noisy_score_count.append(sorted_count_list[3][1])
+
+    #Write a list of indexes with cycles
+    with open('cycles.pkl','wb') as f:
+        pickle.dump(cycle_idxs,f)
 
     gan_score_graph = np.asarray(gan_score_graph,dtype=np.float32)
 
