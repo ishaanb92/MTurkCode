@@ -94,14 +94,14 @@ def analyze_pairwise(image_row,df,verbose=False):
 
     return pair_dict
 
-def generate_directed_graph(image_row,df):
+def generate_directed_graph(image_row,df,verbose=False):
     """
     Generates a directed graph based on pairwise
     comparisions
 
     """
     dg = nx.DiGraph()
-    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=False)
+    pairwise_dict = analyze_pairwise(image_row = image_row,df = df,verbose=verbose)
     image_list = create_image_list(image_row = image_row) # List of gen image URL (Nodes of the graph)
     dg.add_nodes_from(image_list)
     for pairs in pairwise_dict:
@@ -226,7 +226,7 @@ def show_per_image_results(df,url_struct,image_idx,verbose=False):
     # Graph based scores
 
     dg = generate_directed_graph(image_row = image_row,
-                                 df = df)
+                                 df = df,verbose=verbose)
 
     cycle_list = find_cycles(g = dg,verbose=True)
     graph_score_dict = compute_graph_scores(dg)
@@ -555,6 +555,6 @@ def normality_test(score_array):
 if __name__ == '__main__':
     df = read_results('results_mturk.csv')
     url_struct = read_url_struct('url_struct.pkl')
-    accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
+    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
     #create_output_csv(df=df,url_struct=url_struct)
-    #show_per_image_results(df=df,url_struct=url_struct,image_idx=32,verbose=True)
+    show_per_image_results(df=df,url_struct=url_struct,image_idx=48,verbose=True)
