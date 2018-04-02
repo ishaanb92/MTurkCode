@@ -12,7 +12,7 @@ def get_hit_answer(mturk,hit_id,hit_dict):
     for the given hit ID
     """
 
-    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Approved'])
+    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted'])
     print('Results for HIT ID : {}.Num of assignments : {}'.format(hit_id,len(worker_results['Assignments'])))
     #Dictionary to maintain a mapping between worker ID and answers provided by that worker
     worker_time_dict = {}

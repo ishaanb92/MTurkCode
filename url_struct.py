@@ -2,12 +2,14 @@
 
 import pickle
 
+n_images = 1000
+
 def generate_url_struct():
-    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/mutrk_db_fixed'
-    image_names = ['ae.jpg','ce.jpg','gan.jpg','noisy_0.jpg']
+    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/gans_compare/celeba'
+    image_names = ['dcgan.jpg','dcgan-cons.jpg','dcgan-gp.jpg','wgan.jpg','wgan-gp.jpg']
     pairs = generate_pairs(image_names)
     url_struct = []
-    for folder in range(512):
+    for folder in range(n_images):
         struct_row = []
         folder_url = base_url + '/' + str(folder)
         struct_row.append(folder_url+'/original.jpg')

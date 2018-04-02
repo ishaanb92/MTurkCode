@@ -149,7 +149,7 @@ if __name__ == '__main__':
     url_struct = get_url_struct('url_struct.pkl')
 
     num_blocks = 1
-    images_per_hit = 50
+    images_per_hit = 5
     image_row_length = len(url_struct[0])
 
     for pair in range(1,image_row_length):
