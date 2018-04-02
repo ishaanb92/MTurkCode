@@ -91,6 +91,7 @@ def generate_single_question_single_image(original,image1,image2,qid):
         qid)
 
     return question
+
 def generate_html_question(merged_questions):
     """
     Generates the final XML needed to create HIT

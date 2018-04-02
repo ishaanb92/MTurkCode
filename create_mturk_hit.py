@@ -4,6 +4,8 @@ import pickle
 import generate_question
 from get_creds import *
 import sys
+import numpy as np
+
 def create_hit(mturk,question):
     """
     Creates a single HIT using the MTurk object and the supplied XML-HTML question form
@@ -35,7 +37,16 @@ def create_question(url_struct,image_idx,num_images,pair_num):
     images_per_hit = []
     for image_num in range(image_idx,image_idx+num_images):
         image_triple = []
-        merged_questions += generate_question.generate_single_question(url_struct[image_num][0],url_struct[image_num][pair_num][0],url_struct[image_num][pair_num][1])
+        #Randomize positioning of GAN in-painted images by simulating a coin-toss
+        coin_face = np.random.binomial(n=1,p=0.5)
+        if coin_face == 1: #Heads
+            merged_questions += generate_question.generate_single_question(original = url_struct[image_num][0],
+                                                                           image1 = url_struct[image_num][pair_num][0],
+                                                                           image2 = url_struct[image_num][pair_num][1])
+        else: #Tails
+            merged_questions += generate_question.generate_single_question(original = url_struct[image_num][0],
+                                                                           image1 = url_struct[image_num][pair_num][1],
+                                                                           image2 = url_struct[image_num][pair_num][0])
         image_triple.append(url_struct[image_num][0])
         image_triple.append(url_struct[image_num][pair_num][0])
         image_triple.append(url_struct[image_num][pair_num][1])
