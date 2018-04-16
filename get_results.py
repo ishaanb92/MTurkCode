@@ -28,6 +28,7 @@ def get_hit_answer(mturk,hit_id,hit_dict):
         for question,idx in zip(hit_dict[hit_id],range(len(hit_dict[hit_id]))):
             if idx < len(single_worker_answers):
                 if single_worker_answers[idx] != question[1] and single_worker_answers[idx] != question[2] and single_worker_answers[idx] != 'Unsure':
+                    print('Missing or Invalid responses. HIT ID : {}!'.format(hit_id))
                     try:
                         correct_index = single_worker_answers.index(question[1])
                     except ValueError:
@@ -107,7 +108,7 @@ if __name__ == '__main__':
        aws_access_key_id = access_key,
        aws_secret_access_key = secret_access_key,
        region_name='us-east-1',
-       #endpoint_url = MTURK_SANDBOX
+       endpoint_url = MTURK_SANDBOX
     )
 
     with open('hit_dict.pkl','rb') as f:

@@ -163,7 +163,7 @@ if __name__ == '__main__':
     images_per_hit = 5
     image_row_length = len(url_struct[0])
 
-    for pair in range(1,image_row_length):
+    for pair in range(1,4): # FIXME : Remove hard-code
         for step in range(num_blocks):
             image_idx = step*images_per_hit
             hit_dict = generate_single_hit(mturk=mturk,
