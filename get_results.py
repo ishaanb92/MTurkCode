@@ -28,7 +28,7 @@ def get_hit_answer(mturk,hit_id,hit_dict):
         for question,idx in zip(hit_dict[hit_id],range(len(hit_dict[hit_id]))):
             if idx < len(single_worker_answers):
                 if single_worker_answers[idx] != question[1] and single_worker_answers[idx] != question[2] and single_worker_answers[idx] != 'Unsure':
-                    print('Missing or Invalid responses. HIT ID : {}!'.format(hit_id))
+                    print('Missing or Invalid responses. HIT ID : {} Images : {} Worker : {}'.format(hit_id,question,assignment['WorkerId']))
                     try:
                         correct_index = single_worker_answers.index(question[1])
                     except ValueError:
