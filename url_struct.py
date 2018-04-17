@@ -5,8 +5,8 @@ import pickle
 n_images = 1000
 
 def generate_url_struct():
-    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/gans_compare/celeba'
-    image_names = ['dcgan.jpg','dcgan-cons.jpg','dcgan-gp.jpg','wgan.jpg','wgan-gp.jpg']
+    base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/gans_compare/celeba_fixed'
+    image_names = ['dcgan.jpg','dcgan-cons.jpg','dcgan-gp.jpg','wgan.jpg','wgan-gp.jpg','dragan.jpg']
     pairs = generate_pairs(image_names)
     url_struct = []
     for folder in range(n_images):
@@ -36,8 +36,4 @@ def generate_pairs(imgList):
 
 if __name__ == '__main__':
     generate_url_struct()
-    # Test
-    with open('url_struct.pkl','rb') as f:
-        url_struct = pickle.load(f)
-    print(url_struct[0])
 
