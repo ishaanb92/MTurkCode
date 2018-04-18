@@ -17,8 +17,8 @@ def create_hit(mturk,question):
         Title = 'Finding similar images',
         Description = 'Given are sets of 3 images, select which image looks more like the original image',
         Keywords = 'text, quick, labeling',
-        Reward = '0.5',
-        MaxAssignments = 5,
+        Reward = '0.2', #20 cents reward per HIT per user
+        MaxAssignments = 3,
         LifetimeInSeconds = 172800,
         AssignmentDurationInSeconds = 600,
         AutoApprovalDelayInSeconds = 14400,
@@ -106,9 +106,7 @@ def generate_single_hit(mturk,url_struct,image_idx,num_images,pair_num,hit_dict)
 
     hit = create_hit(mturk=mturk,question=question)
     hit_dict[hit['HITId']] = images_per_hit #Update the dictionary
-    print ("A new HIT has been created. You can preview it here:")
-    print ("https://workersandbox.mturk.com/mturk/preview?groupId=" + hit['HITGroupId'])
-    print ("HITID = " + hit['HITId']+ " (Use to Get Results)")
+    print ("HIT created on mTurk with HITID = {}".format(hit['HITId']))
     return hit_dict
 
 def generate_single_hit_single_image(mturk,url_struct,image_idx,hit_dict):
@@ -150,7 +148,6 @@ if __name__ == '__main__':
                         aws_access_key_id = access_key,
                         aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
-                        endpoint_url = MTURK_SANDBOX
                         )
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
@@ -159,8 +156,11 @@ if __name__ == '__main__':
 
     url_struct = get_url_struct('url_struct.pkl')
 
-    num_blocks = 1
-    images_per_hit = 5
+    # HIT params
+    images_per_hit = 20
+    n_images = len(url_struct)
+    num_blocks = n_images//images_per_hit
+
     image_row_length = len(url_struct[0]) #Length = 1 + number of possible pairs
 
     for pair in range(1,image_row_length):
@@ -173,6 +173,6 @@ if __name__ == '__main__':
                                            num_images = images_per_hit,
                                            hit_dict = hit_dict)
 
-    save_hit_dict('hit_dict.pkl',hit_dict)
+    save_hit_dict('hit_dict_live.pkl',hit_dict)
 
 
