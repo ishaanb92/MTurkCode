@@ -555,18 +555,29 @@ def normality_test(score_array):
     return p_value
 
 def get_model_name(answer):
+    """
+    Extract model name string from answer URL
+
+    """
     return answer.split('/')[-1].split('.')[0]
 
 def analyze_new_results(df):
+    """
+    Coarse grain analysis of results, win-counts per model
+    Prints a dictionary with counts
+
+    """
     score_dict = {}
     # Create dict to score model-wise counts
     for model in models:
         score_dict[model] = 0
+
     for answer in df['Winner']:
         if answer == 'Unsure':
             continue
         mname = get_model_name(answer)
         score_dict[mname] += 1
+
     print(score_dict)
 
 
