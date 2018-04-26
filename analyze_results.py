@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 
+models = ['dcgan','dragan','dcgan-gp','wgan','wgan-gp','dcgan-cons']
+
 def read_results(filename):
     """
     Return pandas dataframe for the results CSV file
@@ -552,9 +554,22 @@ def normality_test(score_array):
     _,p_value = shapiro(x=score_array)
     return p_value
 
+def get_model_name(answer):
+    return answer.split('/')[-1].split('.')[0]
+
+def analyze_new_results(df):
+    score_dict = {}
+    # Create dict to score model-wise counts
+    for model in models:
+        score_dict[model] = 0
+    for answer in df['Winner']:
+        if answer == 'Unsure':
+            continue
+        mname = get_model_name(answer)
+        score_dict[mname] += 1
+    print(score_dict)
+
+
 if __name__ == '__main__':
-    df = read_results('results_mturk.csv')
-    url_struct = read_url_struct('url_struct.pkl')
-    #accumulate_per_image_results(df=df,url_struct=url_struct,num_images=200)
-    #create_output_csv(df=df,url_struct=url_struct)
-    show_per_image_results(df=df,url_struct=url_struct,image_idx=48,verbose=True)
+    df = pd.read_csv('celebA_results.csv')
+    analyze_new_results(df=df)
