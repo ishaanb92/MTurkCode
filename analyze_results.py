@@ -569,6 +569,32 @@ def responses_per_pair(df):
         count_dict[tuple(pair)] = df[((df['Model 1'] == pair[0]) & (df['Model 2'] == pair[1]))].shape[0] + df[((df['Model 1'] == pair[1]) & (df['Model 2'] == pair[0]))].shape[0]
     print(count_dict)
 
+def get_image_id(url):
+    return int(url.split('/')[-2])
+
+def find_missing_images(df):
+
+    sub_df = df[((df['Model 1'] == 'wgan-gp') & (df['Model 2'] == 'dragan'))]
+
+    if sub_df.shape[0] == 0:
+        sub_df = df[((df['Model 1'] == 'dragan') & (df['Model 2'] == 'wgan-gp'))]
+
+    ids_list = []
+    for url in sub_df['Original Image']:
+        ids_list.append(get_image_id(url))
+
+    ids_list = list(set(ids_list))
+    print('Number of images part of quiz : {}'.format(len(ids_list)))
+
+    missing_ids = []
+    for id_check in range(1000):
+        if id_check not in ids_list:
+            missing_ids.append(id_check)
+    print('Missing IDs : {}'.format(len(missing_ids)))
+    print(missing_ids)
+
+
+
 def analyze_new_results(df):
     """
     Coarse grain analysis of results, win-counts per model
@@ -586,6 +612,7 @@ def analyze_new_results(df):
 
     print(score_dict)
     responses_per_pair(df=df)
+    find_missing_images(df=df)
 
 
 
