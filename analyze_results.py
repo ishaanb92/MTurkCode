@@ -8,7 +8,8 @@ from scipy.stats import shapiro
 import matplotlib.pyplot as plt
 import os
 import pickle
-
+from get_new_results import models
+from url_struct import generate_pairs
 
 def read_results(filename):
     """
@@ -554,6 +555,20 @@ def normality_test(score_array):
     return p_value
 
 
+def responses_per_pair(df):
+    """
+    Diagnostic function to check how many responses we have per-pair
+    To ensure fair evaluation of responses
+
+    """
+    pairs = generate_pairs(models)
+    count_dict = {}
+    for pair in pairs:
+        count_dict[tuple(pair)] = 0
+    for pair in pairs:
+        count_dict[tuple(pair)] = df[((df['Model 1'] == pair[0]) & (df['Model 2'] == pair[1]))].shape[0] + df[((df['Model 1'] == pair[1]) & (df['Model 2'] == pair[0]))].shape[0]
+    print(count_dict)
+
 def analyze_new_results(df):
     """
     Coarse grain analysis of results, win-counts per model
@@ -566,12 +581,13 @@ def analyze_new_results(df):
         score_dict[model] = 0
 
     for answer in df['Winner']:
-        if answer == 'Unsure':
-            continue
-        mname = get_model_name(answer)
-        score_dict[mname] += 1
+        if answer != 'Unsure':
+            score_dict[answer] += 1
 
     print(score_dict)
+    responses_per_pair(df=df)
+
+
 
 
 if __name__ == '__main__':

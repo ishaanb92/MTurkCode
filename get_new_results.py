@@ -7,7 +7,6 @@ import sys
 import numpy as np
 import xmltodict
 
-
 access_key,secret_access_key = get_creds('credentials.csv')
 
 mturk = boto3.client('mturk',
@@ -52,13 +51,15 @@ def create_matrix():
     hits = [x.strip() for x in ids]
 
     matrix = []
+    missing_pairs = 0
     for hit,idx in zip(hits,range(len(hits))):
         response = mturk.list_assignments_for_hit(HITId = hit)
         # Find the pair being considered for this HIT
         models_in_hit = find_pair_for_hit(response = response)
         if len(models_in_hit) !=2 :
             print('Complete pair not found : {} HIT ID : {}'.format(models_in_hit,hit))
-            continue
+            missing_pairs += 1
+            continue # Drop the HIT
 
         for assignment in response['Assignments']:
             if assignment['SubmitTime'].month != 4: # Discard some old HITs from January
@@ -87,7 +88,9 @@ def create_matrix():
                     print(row)
                 matrix.append(row)
 
+    print('Pairs not found for {} HITs'.format(missing_pairs))
     return matrix
+
 
 
 def create_table():
