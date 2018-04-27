@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 
-models = ['dcgan','dragan','dcgan-gp','wgan','wgan-gp','dcgan-cons']
 
 def read_results(filename):
     """
@@ -554,12 +553,6 @@ def normality_test(score_array):
     _,p_value = shapiro(x=score_array)
     return p_value
 
-def get_model_name(answer):
-    """
-    Extract model name string from answer URL
-
-    """
-    return answer.split('/')[-1].split('.')[0]
 
 def analyze_new_results(df):
     """
