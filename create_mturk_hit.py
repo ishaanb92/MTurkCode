@@ -79,6 +79,9 @@ def create_question_single_image(url_struct,image_idx):
     question = generate_question.generate_html_question(merged_questions = merged_questions)
 
     return question,images_per_hit
+
+
+
 def get_url_struct(filename):
 
     """
@@ -107,6 +110,7 @@ def generate_single_hit(mturk,url_struct,image_idx,num_images,pair_num,hit_dict)
     hit = create_hit(mturk=mturk,question=question)
     hit_dict[hit['HITId']] = images_per_hit #Update the dictionary
     print ("HIT created on mTurk with HITID = {}".format(hit['HITId']))
+    print('URL : https://workersandbox.mturk.com/mturk/preview?groupId={}'.format(hit['HITGroupId']))
     return hit_dict
 
 def generate_single_hit_single_image(mturk,url_struct,image_idx,hit_dict):
@@ -148,6 +152,7 @@ if __name__ == '__main__':
                         aws_access_key_id = access_key,
                         aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
+                        endpoint_url = MTURK_SANDBOX
                         )
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
@@ -158,21 +163,21 @@ if __name__ == '__main__':
 
     # HIT params
     images_per_hit = 20
-    n_images = len(url_struct)
+    n_images = 340
     num_blocks = n_images//images_per_hit
 
     image_row_length = len(url_struct[0]) #Length = 1 + number of possible pairs
 
-    for pair in range(1,image_row_length):
-        for step in range(num_blocks):
-            image_idx = step*images_per_hit
-            hit_dict = generate_single_hit(mturk=mturk,
-                                           url_struct=url_struct,
-                                           image_idx = image_idx,
-                                           pair_num = pair,
-                                           num_images = images_per_hit,
-                                           hit_dict = hit_dict)
+    for step in range(num_blocks):
+        image_idx = 660 + step*images_per_hit
+        hit_dict = generate_single_hit(mturk=mturk,
+                                       url_struct=url_struct,
+                                       image_idx = image_idx,
+                                       pair_num = 15, #Fixed pair -- DRAGAN/WGAN-GP
+                                       num_images = images_per_hit,
+                                       hit_dict = hit_dict)
 
+    print('Number of HITs launched : {}'.format(len(hit_dict)))
     save_hit_dict('hit_dict_live.pkl',hit_dict)
 
 
