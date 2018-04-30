@@ -152,7 +152,6 @@ if __name__ == '__main__':
                         aws_access_key_id = access_key,
                         aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
-                        endpoint_url = MTURK_SANDBOX
                         )
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
