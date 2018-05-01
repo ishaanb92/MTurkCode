@@ -10,6 +10,21 @@ import os
 import pickle
 from get_new_results import models
 from url_struct import generate_pairs
+import math
+
+import base64
+from PIL import Image
+from io import BytesIO
+
+"""
+Script that dumps all analysis related functions together
+TODO: There is a lot of junk in this script, need to remove code/functions that are not being used
+
+"""
+
+images_dir_base = '/home/fungii/inpaintings/celeba_fixed'
+pd.set_option('display.max_colwidth', -1)
+base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/gans_compare/celeba_fixed/'
 
 def read_results(filename):
     """
@@ -591,11 +606,21 @@ def find_missing_images(df):
         if id_check not in ids_list:
             missing_ids.append(id_check)
     print('Missing IDs : {}'.format(len(missing_ids)))
-    print(missing_ids)
 
 
 
-def analyze_new_results(df):
+def rank_models_metric(df):
+    """
+    Ranks models according to learned distance
+
+    """
+    for column in df:
+        if column == 'Original Image' or column == 'Unnamed':
+            continue
+        else:
+            print('Model : {} Mean distance : {} Variance : {}'.format(column,df[column].mean(),df[column].var()))
+
+def rank_models_responses(df):
     """
     Coarse grain analysis of results, win-counts per model
     Prints a dictionary with counts
@@ -606,17 +631,136 @@ def analyze_new_results(df):
     for model in models:
         score_dict[model] = 0
 
-    for answer in df['Winner']:
+    for answer in df_responses['Winner']:
         if answer != 'Unsure':
             score_dict[answer] += 1
 
     print(score_dict)
-    responses_per_pair(df=df)
-    find_missing_images(df=df)
 
+def rank_models(df_responses,df_metric):
+    print('User Response Ranking')
+    rank_models_responses(df=df_responses)
+    print('Metric Ranking')
+    rank_models_metric(df=df_metric)
+
+
+def create_urls(image_id,model1,model2):
+
+    """
+    Given the image ID, return the URL for the
+    original image and both in-painted images
+
+    """
+    urls = []
+    urls.append(base_url + str(image_id) + '/original.jpg')
+    urls.append(base_url + str(image_id) + '/gen/' + '{}.jpg'.format(model1))
+    urls.append(base_url + str(image_id) + '/gen/' + '{}.jpg'.format(model2))
+    return urls
+
+def winning_model(imageDF,model1,model2):
+    """
+    Given responses for a given original image (for a given model pair)
+    return winning model
+    """
+    model1_wins = imageDF[(imageDF['Winner'] == model1)].shape[0]
+    model2_wins = imageDF[(imageDF['Winner'] == model2)].shape[0]
+
+    if model1_wins > model2_wins:
+        return model1,model1_wins
+
+    elif model2_wins > model1_wins:
+        return model2,model2_wins
+
+    else:
+        return 'Tie',None
+
+
+def return_image_paths(image_idx,model1,model2):
+    """
+    Returns file path [original image,model 1,model 2]
+    """
+    paths = []
+    paths.append(os.path.join(images_dir_base,str(image_idx),'original.jpg'))
+    paths.append(os.path.join(images_dir_base,str(image_idx),'gen','{}.jpg'.format(model1)))
+    paths.append(os.path.join(images_dir_base,str(image_idx),'gen','{}.jpg'.format(model2)))
+    return paths
+
+def image_path_to_html(path):
+    return '<img src="'+ path + '"/>'
+
+def compare_results(model1,model2,df_metric,df_responses):
+    """
+    Compare results from the learned metric -- user responses
+    for a given pair on a per-image basis
+
+    """
+
+    subDF_responses =  df_responses[((df_responses['Model 1'] == model1) & (df_responses['Model 2'] == model2))]
+    print('We have {} user responses for {}/{} pair'.format(subDF_responses.shape[0],model1,model2))
+
+    agree = 0
+    ties = 0
+    tie_diff = []
+
+    disagreement_matrix = []
+    disagreement_row = []
+
+    for index,row in df_metric.iterrows():
+        disagreement_row = []
+        image_urls= create_urls(index,model1,model2)
+        # Check user response
+        imageDF = subDF_responses[(subDF_responses['Original Image'] == image_urls[0])] # Extract responses for given original image
+        if imageDF.shape[0] == 0 :
+            print('Could not find any responses for original image : {}'.format(image_urls[0]))
+            continue
+
+        # Get winning image
+        winner,wins = winning_model(imageDF,model1,model2)
+
+        if winner == 'Tie':
+            ties += 1
+
+        # Agreement condition
+        if (row[model1.upper()] < row[model2.upper()]) and (winner == model1):
+            agree += 1
+
+        elif (row[model1.upper()] > row[model2.upper()]) and (winner == model2):
+            agree += 1
+        else:
+            if winner == 'Tie':
+                tie_diff.append(math.fabs(row[model1.upper()] - row[model2.upper()]))
+                agree += 1
+            else: #Disagreement
+                for url in image_urls:
+                    disagreement_row.append(url)
+                disagreement_row.append(winner.upper())
+                disagreement_row.append(wins)
+                disagreement_row.append(row[model1.upper()])
+                disagreement_row.append(row[model2.upper()])
+                disagreement_matrix.append(disagreement_row)
+
+
+
+
+
+    mean_diff_tie = np.mean(np.asarray(tie_diff))
+    print('Agreement Co-eff : {}'.format(agree/1000))
+    print('Number of Ties : {}'.format(ties))
+    print('Avg distance diff in case of tie : {}'.format(mean_diff_tie))
+    disagreement_matrix = np.asarray(disagreement_matrix)
+    df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'Winner','Wins (Out of 3)','{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
+    df.to_html('disagreement_{}_{}.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
 
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('celebA_results.csv')
-    analyze_new_results(df=df)
+
+    df_responses = pd.read_csv('celebA_results_all.csv')
+    df_metric = pd.read_csv('gan_distances_new.csv')
+
+    rank_models(df_responses=df_responses,df_metric=df_metric)
+
+    compare_results(model1='dcgan',
+                    model2='dcgan-gp',
+                    df_metric = df_metric,
+                    df_responses=df_responses)

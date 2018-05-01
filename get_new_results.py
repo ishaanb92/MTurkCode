@@ -46,9 +46,12 @@ def find_pair_for_hit(response):
 
 
 def create_matrix():
-    with open('hit_list.txt','r') as f:
-        ids = f.readlines()
-    hits = [x.strip() for x in ids]
+    #with open('hit_list.txt','r') as f:
+    #    ids = f.readlines()
+    #hits = [x.strip() for x in ids]
+
+    with open('hit_dict_live.pkl','rb') as f:
+        hits = pickle.load(f)
 
     matrix = []
     missing_pairs = 0
@@ -103,29 +106,20 @@ def create_table():
     matrix = np.asarray(matrix)
 
     df = pd.DataFrame(data=matrix,columns = ['HIT ID','Assignment ID','Worker ID','TimeStamp','Original Image','Model 1','Model 2','Winner'])
-    df.to_csv('celebA_results.csv')
+    df_main = pd.read_csv('celebA_results.csv')
+    frame = [df_main,df]
+    result = pd.concat(frame)
+    result.to_csv('celebA_results_all.csv')
 
 def get_hits():
     hit_dict = mturk.list_hits(MaxResults=100)
     nextToken = hit_dict['NextToken']
     for hit in hit_dict['HITs']:
         hit_id = hit['HITId']
-        print('Deleting HIT : {}'.format(hit_id))
-        mturk.delete_hit(HITId = str(hit_id))
+        print('HITId : {} Status : {} Completed : {}'.format(hit_id,hit['HITStatus'],hit['NumberOfAssignmentsCompleted']))
+    return hit_dict
 
-    hit_dict = {}
-
-    while True:
-        hit_dict = mturk.list_hits(NextToken=nextToken,MaxResults=100)
-        for hit in hit_dict['HITs']:
-            hit_id = hit['HITId']
-            print('Deleting HIT : {}'.format(hit_id))
-            mturk.delete_hit(HITId = str(hit_id))
-        try:
-            nextToken = hit_dict['NextToken']
-        except KeyError:
-            break
-        hit_dict = {}
 
 if __name__ == '__main__':
     create_table()
+
