@@ -743,6 +743,10 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
                         disagreement_row[1] = disagreement_row[2]
                         disagreement_row[2] = dummy_url
 
+                    disagreement_row.append('<input type="radio" name = "{}" value="{}">'.format(index,disagreement_row[1]))
+                    disagreement_row.append('<input type="radio" name = "{}" value="{}">'.format(index,disagreement_row[2]))
+                    disagreement_row.append('<input type="radio" name = "{}" value="Unsure">'.format(index))
+
                 if blind == False:
                     disagreement_row.append(winner.upper())
                     disagreement_row.append(wins)
@@ -766,7 +770,7 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
         df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'Winner','Wins (Out of 3)','{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
         df.to_html('disagreement_{}_{}_solution.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
     else:
-        df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','Model 1','Model 2'])
+        df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','Model 1','Model 2','Choose Model 1','Choose Model 2','Unsure'])
         df.to_html('disagreement_{}_{}_blind.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'Model 1':image_path_to_html,'Model 2':image_path_to_html},escape=False)
 
 
@@ -782,4 +786,4 @@ if __name__ == '__main__':
                     model2='dcgan-gp',
                     df_metric = df_metric,
                     df_responses=df_responses,
-                    blind = True)
+                    blind = False)
