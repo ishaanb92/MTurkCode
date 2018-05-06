@@ -688,7 +688,7 @@ def return_image_paths(image_idx,model1,model2):
 def image_path_to_html(path):
     return '<img src="'+ path + '"/>'
 
-def compare_results(model1,model2,df_metric,df_responses):
+def compare_results(model1,model2,df_metric,df_responses,blind=False):
     """
     Compare results from the learned metric -- user responses
     for a given pair on a per-image basis
@@ -733,10 +733,22 @@ def compare_results(model1,model2,df_metric,df_responses):
             else: #Disagreement
                 for url in image_urls:
                     disagreement_row.append(url)
-                disagreement_row.append(winner.upper())
-                disagreement_row.append(wins)
-                disagreement_row.append(row[model1.upper()])
-                disagreement_row.append(row[model2.upper()])
+
+                if blind == True:
+                    #Swap the pair randomly
+                    coin_face = np.random.binomial(n=1,p=0.5)
+                    if coin_face == 0:
+                        # Swap
+                        dummy_url = disagreement_row[1]
+                        disagreement_row[1] = disagreement_row[2]
+                        disagreement_row[2] = dummy_url
+
+                if blind == False:
+                    disagreement_row.append(winner.upper())
+                    disagreement_row.append(wins)
+                    disagreement_row.append(row[model1.upper()])
+                    disagreement_row.append(row[model2.upper()])
+
                 disagreement_matrix.append(disagreement_row)
 
 
@@ -747,9 +759,15 @@ def compare_results(model1,model2,df_metric,df_responses):
     print('Agreement Co-eff : {}'.format(agree/1000))
     print('Number of Ties : {}'.format(ties))
     print('Avg distance diff in case of tie : {}'.format(mean_diff_tie))
+
     disagreement_matrix = np.asarray(disagreement_matrix)
-    df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'Winner','Wins (Out of 3)','{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
-    df.to_html('disagreement_{}_{}.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
+
+    if blind == False:
+        df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'Winner','Wins (Out of 3)','{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
+        df.to_html('disagreement_{}_{}_solution.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
+    else:
+        df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','Model 1','Model 2'])
+        df.to_html('disagreement_{}_{}_blind.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'Model 1':image_path_to_html,'Model 2':image_path_to_html},escape=False)
 
 
 
@@ -763,4 +781,5 @@ if __name__ == '__main__':
     compare_results(model1='dcgan',
                     model2='dcgan-gp',
                     df_metric = df_metric,
-                    df_responses=df_responses)
+                    df_responses=df_responses,
+                    blind = True)
