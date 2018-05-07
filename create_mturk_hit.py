@@ -54,6 +54,10 @@ def create_question(url_struct,image_idx,num_images,pair_num):
 
     question = generate_question.generate_html_question(merged_questions = merged_questions)
 
+    if image_idx == 0:
+        with open('hit_example.html','w') as f:
+            f.write(question)
+
     return question,images_per_hit
 
 def create_question_single_image(url_struct,image_idx):
@@ -152,6 +156,7 @@ if __name__ == '__main__':
                         aws_access_key_id = access_key,
                         aws_secret_access_key = secret_access_key,
                         region_name='us-east-1',
+                        endpoint_url = MTURK_SANDBOX
                         )
 
     print ("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
@@ -162,17 +167,17 @@ if __name__ == '__main__':
 
     # HIT params
     images_per_hit = 20
-    n_images = 340
+    n_images = 20
     num_blocks = n_images//images_per_hit
 
     image_row_length = len(url_struct[0]) #Length = 1 + number of possible pairs
 
     for step in range(num_blocks):
-        image_idx = 660 + step*images_per_hit
+        image_idx = step*images_per_hit
         hit_dict = generate_single_hit(mturk=mturk,
                                        url_struct=url_struct,
                                        image_idx = image_idx,
-                                       pair_num = 15, #Fixed pair -- DRAGAN/WGAN-GP
+                                       pair_num = 1, #Fixed pair -- DRAGAN/WGAN-GP
                                        num_images = images_per_hit,
                                        hit_dict = hit_dict)
 
