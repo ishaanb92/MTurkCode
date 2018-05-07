@@ -19,6 +19,8 @@ TODO: There is a lot of junk in this script, need to remove code/functions that 
 
 """
 
+eps = 0.2
+
 images_dir_base = '/home/fungii/inpaintings/celeba_fixed'
 pd.set_option('display.max_colwidth', -1)
 base_url = 'https://s3-us-west-1.amazonaws.com/facesdb/gans_compare/celeba_fixed/'
@@ -640,9 +642,9 @@ def normalize_scores(score_tuple,reverse=False):
     diff = max_elem - min_elem
     for elem in score_tuple:
         if reverse == True:
-            norm_dict[elem[0].lower()] = 1-(elem[1]-min_elem)/diff
+            norm_dict[elem[0].lower()] = (elem[1]-min_elem)/diff + eps
         else:
-            norm_dict[elem[0].lower()] = (elem[1]-min_elem)/diff
+            norm_dict[elem[0].lower()] = 1 - (elem[1]-min_elem)/diff + eps
 
     return norm_dict
 
@@ -680,7 +682,7 @@ def rank_models(df_responses,df_metric,fid_dict):
 def create_metric_table(responses,metric,fid):
     """
     Args : 3 dictionaries containing normalized (0-1) scores
-    for each model (less is better)
+    for each model (more is better)
 
     Creates a table which can be used for viz
     """
@@ -688,16 +690,23 @@ def create_metric_table(responses,metric,fid):
     table = []
     for model in models:
         row = []
-        row.append(model) # Model name
         row.append(responses[model])
         row.append(metric[model])
         row.append(fid[model])
         table.append(row)
 
-    table = pd.DataFrame(data=table,columns = ['Model','User Response Score','Metric Score','FID'])
+    table = np.asarray(table)
+    table = pd.DataFrame(data=table.transpose(),columns = models)
+    method_df = pd.DataFrame(data = {'Method':['User','Triplet','FID']})
 
-    table = table.set_index('Model')
+    frames = [method_df,table]
+    table = pd.concat(frames,axis=1)
+
+    table = table.set_index('Method')
     print(table)
+
+    table.plot.bar()
+    plt.show()
 
 
 
