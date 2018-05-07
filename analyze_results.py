@@ -12,9 +12,6 @@ from get_new_results import models
 from url_struct import generate_pairs
 import math
 
-import base64
-from PIL import Image
-from io import BytesIO
 
 """
 Script that dumps all analysis related functions together
@@ -283,13 +280,13 @@ def create_output_csv(df,url_struct,num_images=200):
     df_scores.to_csv('scores.csv')
 
 
-def dict_sort_values(score_dict):
+def dict_sort_values(score_dict,reverse=True):
     """
     Sorting keys (generated images) in a score dict
     based on the computed score
 
     """
-    s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=True)]
+    s = [(k, score_dict[k]) for k in sorted(score_dict, key=score_dict.get, reverse=reverse)]
     return s
 
 def dict_sort_keys(score_dict):
@@ -608,17 +605,25 @@ def find_missing_images(df):
     print('Missing IDs : {}'.format(len(missing_ids)))
 
 
+def rank_models_fid(fid_dict):
+    print(dict_sort_values(fid_dict,reverse=False))
+
 
 def rank_models_metric(df):
     """
     Ranks models according to learned distance
 
     """
+    cosine_dict = {}
     for column in df:
-        if column == 'Original Image' or column == 'Unnamed':
+        if column == 'Original Image':
             continue
         else:
-            print('Model : {} Mean distance : {} Variance : {}'.format(column,df[column].mean(),df[column].var()))
+            if column.lower() in models:
+                mean = df[column].mean()
+                cosine_dict[column]  = mean
+    print(dict_sort_values(cosine_dict,reverse=False))
+
 
 def rank_models_responses(df):
     """
@@ -635,13 +640,15 @@ def rank_models_responses(df):
         if answer != 'Unsure':
             score_dict[answer] += 1
 
-    print(score_dict)
+    print(dict_sort_values(score_dict))
 
-def rank_models(df_responses,df_metric):
+def rank_models(df_responses,df_metric,fid_dict):
     print('User Response Ranking')
     rank_models_responses(df=df_responses)
     print('Metric Ranking')
     rank_models_metric(df=df_metric)
+    print('FID Ranking')
+    rank_models_fid(fid_dict=fid_dict)
 
 
 def create_urls(image_id,model1,model2):
@@ -777,10 +784,15 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
 
 if __name__ == '__main__':
 
-    df_responses = pd.read_csv('celebA_results_all.csv')
-    df_metric = pd.read_csv('gan_distances_new.csv')
+    df_responses = pd.read_csv('results/celebA_results_all.csv')
+    df_metric = pd.read_csv('results/gan_distances_new_model.csv')
 
-    rank_models(df_responses=df_responses,df_metric=df_metric)
+
+    with open('results/fid_dict.pkl','rb') as f:
+        fid_dict = pickle.load(f)
+
+    rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
+
 
     compare_results(model1='dcgan',
                     model2='dcgan-gp',
