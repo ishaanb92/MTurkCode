@@ -606,7 +606,11 @@ def find_missing_images(df):
 
 
 def rank_models_fid(fid_dict):
-    print(dict_sort_values(fid_dict,reverse=False))
+    fid_dict_fixed = {}
+    for key in fid_dict:
+        fid_dict_fixed[key.split('/')[-1]] = fid_dict[key]
+
+    return dict_sort_values(fid_dict_fixed,reverse=False)
 
 
 def rank_models_metric(df):
@@ -622,7 +626,25 @@ def rank_models_metric(df):
             if column.lower() in models:
                 mean = df[column].mean()
                 cosine_dict[column]  = mean
-    print(dict_sort_values(cosine_dict,reverse=False))
+    return dict_sort_values(cosine_dict,reverse=False)
+
+def normalize_scores(score_tuple,reverse=False):
+    """
+    Takes a tuple of model-score pair and normalizes the scores
+    to return a dictionary
+    """
+    scores = [score_elem[1] for score_elem in score_tuple]
+    norm_dict = {}
+    max_elem =  max(scores)
+    min_elem = min(scores)
+    diff = max_elem - min_elem
+    for elem in score_tuple:
+        if reverse == True:
+            norm_dict[elem[0].lower()] = 1-(elem[1]-min_elem)/diff
+        else:
+            norm_dict[elem[0].lower()] = (elem[1]-min_elem)/diff
+
+    return norm_dict
 
 
 def rank_models_responses(df):
@@ -640,15 +662,45 @@ def rank_models_responses(df):
         if answer != 'Unsure':
             score_dict[answer] += 1
 
-    print(dict_sort_values(score_dict))
+    return dict_sort_values(score_dict)
 
 def rank_models(df_responses,df_metric,fid_dict):
-    print('User Response Ranking')
-    rank_models_responses(df=df_responses)
-    print('Metric Ranking')
-    rank_models_metric(df=df_metric)
-    print('FID Ranking')
-    rank_models_fid(fid_dict=fid_dict)
+    response_tuple = rank_models_responses(df=df_responses)
+    metric_tuple = rank_models_metric(df=df_metric)
+    fid_tuple = rank_models_fid(fid_dict=fid_dict)
+
+    # Normalize scores
+    responses = normalize_scores(response_tuple,reverse=True)
+    metric = normalize_scores(metric_tuple)
+    fid = normalize_scores(fid_tuple)
+
+    # Create dataframe
+    create_metric_table(responses=responses,metric=metric,fid=fid)
+
+def create_metric_table(responses,metric,fid):
+    """
+    Args : 3 dictionaries containing normalized (0-1) scores
+    for each model (less is better)
+
+    Creates a table which can be used for viz
+    """
+
+    table = []
+    for model in models:
+        row = []
+        row.append(model) # Model name
+        row.append(responses[model])
+        row.append(metric[model])
+        row.append(fid[model])
+        table.append(row)
+
+    table = pd.DataFrame(data=table,columns = ['Model','User Response Score','Metric Score','FID'])
+
+    table = table.set_index('Model')
+    print(table)
+
+
+
 
 
 def create_urls(image_id,model1,model2):
@@ -694,6 +746,7 @@ def return_image_paths(image_idx,model1,model2):
 
 def image_path_to_html(path):
     return '<img src="'+ path + '"/>'
+
 
 def compare_results(model1,model2,df_metric,df_responses,blind=False):
     """
@@ -794,8 +847,8 @@ if __name__ == '__main__':
     rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
 
 
-    compare_results(model1='dcgan',
-                    model2='dcgan-gp',
-                    df_metric = df_metric,
-                    df_responses=df_responses,
-                    blind = False)
+    #compare_results(model1='dcgan',
+    #                model2='dcgan-gp',
+    #                df_metric = df_metric,
+    #                df_responses=df_responses,
+    #                blind = False)
