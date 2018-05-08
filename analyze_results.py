@@ -642,9 +642,9 @@ def normalize_scores(score_tuple,reverse=False):
     diff = max_elem - min_elem
     for elem in score_tuple:
         if reverse == True:
-            norm_dict[elem[0].lower()] = (elem[1]-min_elem)/diff + eps
+            norm_dict[elem[0].lower()] = 1 -(elem[1]-min_elem)/diff + eps
         else:
-            norm_dict[elem[0].lower()] = 1 - (elem[1]-min_elem)/diff + eps
+            norm_dict[elem[0].lower()] = (elem[1]-min_elem)/diff + eps
 
     return norm_dict
 
@@ -774,8 +774,12 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
     disagreement_matrix = []
     disagreement_row = []
 
+    tie_matrix = []
+    tie_row = []
+
     for index,row in df_metric.iterrows():
         disagreement_row = []
+        tie_row = []
         image_urls= create_urls(index,model1,model2)
         # Check user response
         imageDF = subDF_responses[(subDF_responses['Original Image'] == image_urls[0])] # Extract responses for given original image
@@ -798,6 +802,13 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
         else:
             if winner == 'Tie':
                 tie_diff.append(math.fabs(row[model1.upper()] - row[model2.upper()]))
+                for url in image_urls:
+                    tie_row.append(url)
+
+                tie_row.append(row[model1.upper()])
+                tie_row.append(row[model2.upper()])
+
+                tie_matrix.append(tie_row)
                 agree += 1
             else: #Disagreement
                 for url in image_urls:
@@ -834,15 +845,19 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
     print('Avg distance diff in case of tie : {}'.format(mean_diff_tie))
 
     disagreement_matrix = np.asarray(disagreement_matrix)
+    tie_matrix = np.asarray(tie_matrix)
 
+    # Disagreement Table
     if blind == False:
         df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'Winner','Wins (Out of 3)','{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
         df.to_html('disagreement_{}_{}_solution.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
     else:
         df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','Model 1','Model 2','Choose Model 1','Choose Model 2','Unsure'])
-        df.to_html('disagreement_{}_{}_blind.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'Model 1':image_path_to_html,'Model 2':image_path_to_html},escape=False)
+        df.to_html('results/disagreement_{}_{}_blind.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'Model 1':image_path_to_html,'Model 2':image_path_to_html},escape=False)
 
-
+    # Tie table
+    df_ties = pd.DataFrame(data=tie_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
+    df_ties.to_html('results/ties_{}_{}.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
 
 if __name__ == '__main__':
 
@@ -853,11 +868,11 @@ if __name__ == '__main__':
     with open('results/fid_dict.pkl','rb') as f:
         fid_dict = pickle.load(f)
 
-    rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
+    #rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
 
 
-    #compare_results(model1='dcgan',
-    #                model2='dcgan-gp',
-    #                df_metric = df_metric,
-    #                df_responses=df_responses,
-    #                blind = False)
+    compare_results(model1='dcgan',
+                    model2='dcgan-gp',
+                    df_metric = df_metric,
+                    df_responses=df_responses,
+                    blind = False)
