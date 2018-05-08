@@ -764,6 +764,7 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
 
     """
 
+    # Extract the subframe that contain responses for the given pair of models
     subDF_responses =  df_responses[((df_responses['Model 1'] == model1) & (df_responses['Model 2'] == model2))]
     print('We have {} user responses for {}/{} pair'.format(subDF_responses.shape[0],model1,model2))
 
@@ -828,7 +829,7 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
                     disagreement_row.append('<input type="radio" name = "{}" value="Unsure">'.format(index))
 
                 if blind == False:
-                    disagreement_row.append(winner.upper())
+                    disagreement_row.append(winner.lower())
                     disagreement_row.append(wins)
                     disagreement_row.append(row[model1.upper()])
                     disagreement_row.append(row[model2.upper()])
@@ -840,7 +841,7 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
 
 
     mean_diff_tie = np.mean(np.asarray(tie_diff))
-    print('Agreement Co-eff : {}'.format(agree/1000))
+    print('Number of agreements : {}'.format(agree))
     print('Number of Ties : {}'.format(ties))
     print('Avg distance diff in case of tie : {}'.format(mean_diff_tie))
 
@@ -850,7 +851,7 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
     # Disagreement Table
     if blind == False:
         df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'Winner','Wins (Out of 3)','{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
-        df.to_html('disagreement_{}_{}_solution.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
+        df.to_html('results/disagreement_{}_{}_solution.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
     else:
         df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','Model 1','Model 2','Choose Model 1','Choose Model 2','Unsure'])
         df.to_html('results/disagreement_{}_{}_blind.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'Model 1':image_path_to_html,'Model 2':image_path_to_html},escape=False)
@@ -858,6 +859,8 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
     # Tie table
     df_ties = pd.DataFrame(data=tie_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
     df_ties.to_html('results/ties_{}_{}.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
+
+    return df,df_ties,agree
 
 if __name__ == '__main__':
 
@@ -871,8 +874,8 @@ if __name__ == '__main__':
     #rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
 
 
-    compare_results(model1='dcgan',
-                    model2='dcgan-gp',
-                    df_metric = df_metric,
-                    df_responses=df_responses,
-                    blind = False)
+    df_disagree,df_ties,_ = compare_results(model1='dcgan',
+                                          model2='dcgan-gp',
+                                          df_metric = df_metric,
+                                          df_responses=df_responses,
+                                          blind = False)
