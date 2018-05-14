@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 from analyze_results import *
-
-
+from argparse import ArgumentParser
 
 
 def clean_results(model1,model2,df_metric,df_responses):
@@ -17,7 +16,7 @@ def clean_results(model1,model2,df_metric,df_responses):
                                           df_metric = df_metric,
                                           df_responses=df_responses,
                                           blind = False)
-    with open('responses_dcgan_dcgan-gp.txt','r') as f:
+    with open('pruned_responses/responses_{}_{}.txt'.format(model1,model2),'r') as f:
         responses = f.read().splitlines()
 
     metric_wins = 0
@@ -49,14 +48,16 @@ def clean_results(model1,model2,df_metric,df_responses):
 
 if __name__ == '__main__':
 
+    parser = ArgumentParser()
+    parser.add_argument('--model1',type=str,required=True)
+    parser.add_argument('--model2',type=str,required=True)
+    args = parser.parse_args()
     df_responses = pd.read_csv('results/celebA_results_all.csv')
     df_metric = pd.read_csv('results/gan_distances_new_model.csv')
 
-    #TODO : Pass as cmd line args
-    model1 = 'dcgan'
-    model2 = 'dcgan-gp'
-
-    df_pruned = clean_results(model1 = model1,
+    model1 = args.model1
+    model2 = args.model2
+    df_pruned = clean_results(model1 =model1,
                   model2 = model2,
                   df_metric = df_metric,
                   df_responses = df_responses
