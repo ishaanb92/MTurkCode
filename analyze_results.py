@@ -11,7 +11,7 @@ import pickle
 from get_new_results import models
 from url_struct import generate_pairs
 import math
-
+from argparse import ArgumentParser
 
 """
 Script that dumps all analysis related functions together
@@ -907,6 +907,15 @@ def generate_php(html_file,model1,model2):
 
 if __name__ == '__main__':
 
+    parser = ArgumentParser()
+    parser.add_argument('--model1',type=str,required=True)
+    parser.add_argument('--model2',type=str,required=True)
+
+    args = parser.parse_args()
+
+    model1=args.model1
+    model2=args.model2
+
     df_responses = pd.read_csv('results/celebA_results_all.csv')
     df_metric = pd.read_csv('results/gan_distances_new_model.csv')
 
@@ -917,8 +926,8 @@ if __name__ == '__main__':
     #rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
 
 
-    df_disagree,df_ties,_ = compare_results(model1='dragan',
-                                          model2='wgan-gp',
+    df_disagree,df_ties,_ = compare_results(model1=model1,
+                                          model2=model2,
                                           df_metric = df_metric,
                                           df_responses=df_responses,
-                                          blind = True)
+                                          blind = False)
