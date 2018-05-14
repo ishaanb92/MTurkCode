@@ -855,12 +855,55 @@ def compare_results(model1,model2,df_metric,df_responses,blind=False):
     else:
         df = pd.DataFrame(data=disagreement_matrix,columns = ['Original Image','Model 1','Model 2','Choose Model 1','Choose Model 2','Unsure'])
         df.to_html('results/disagreement_{}_{}_blind.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'Model 1':image_path_to_html,'Model 2':image_path_to_html},escape=False)
+        generate_php(html_file='results/disagreement_{}_{}_blind.html'.format(model1,model2),model1=model1,model2=model2)
 
     # Tie table
     df_ties = pd.DataFrame(data=tie_matrix,columns = ['Original Image','{}'.format(model1.upper()),'{}'.format(model2.upper()),'{} Cosine Similarity'.format(model1.upper()),'{} Cosine Similarity'.format(model2.upper())])
     df_ties.to_html('results/ties_{}_{}.html'.format(model1,model2),formatters={'Original Image': image_path_to_html,'{}'.format(model1.upper()):image_path_to_html,'{}'.format(model2.upper()):image_path_to_html},escape=False)
 
     return df,df_ties,agree
+
+def generate_php(html_file,model1,model2):
+    with open(html_file,'r') as f:
+        html_str = f.read()
+
+    php_action_string = """
+        <?php
+        if(isset($_POST['submit'])){{
+
+            $file = fopen('../pruned_responses/responses_{0}_{1}.txt','w');
+            foreach ($_POST as $item) {{
+                fwrite($file,$item."\n");
+            }}
+            fclose($file);
+        }}
+
+        //if their are errors display them
+        if(isset($error)){{
+            foreach($error as $error){{
+                echo "<p style='color:#ff0000'>$error</p>";
+            }}
+        }}
+        ?>
+        <html>
+        <body>
+        <form action = '' method='post'>""".format(model1,model2)
+
+    end_str ="""
+        <div>
+           <button type="submit" name="submit">Submit</button>
+        </div>
+        </form >
+
+        </body>
+        </html>"""
+
+    final_str = php_action_string + html_str + end_str
+    fname = html_file.split('.')[0]
+    with open('{}.php'.format(fname),'w') as f:
+        f.write(final_str)
+        f.close()
+
 
 if __name__ == '__main__':
 
@@ -874,8 +917,8 @@ if __name__ == '__main__':
     #rank_models(df_responses=df_responses,df_metric=df_metric,fid_dict=fid_dict)
 
 
-    df_disagree,df_ties,_ = compare_results(model1='dcgan',
-                                          model2='dcgan-gp',
+    df_disagree,df_ties,_ = compare_results(model1='dragan',
+                                          model2='wgan-gp',
                                           df_metric = df_metric,
                                           df_responses=df_responses,
-                                          blind = False)
+                                          blind = True)
